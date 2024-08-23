@@ -22,16 +22,26 @@ NodeFlow is a data science framework that helps you build production-ready strea
 config/
     catalog.toml
     parameters.toml
+    credentials.toml
 data/
+    ...
+notebooks/
     ...
 nodes/
     __init__.py
     node_group_1.py
     node_group_2.py
     ...
-pipeline/
+pipelines/
     __init__.py
-    pipeline.py
+    pipeline_1.py
+    pipeline_2.py
+    ...
+systems/
+    __init__.py
+    system_1.py
+    system_2.py
+    ...
 tests/
     test_node_group_1.py
     test_node_group_2.py
@@ -46,6 +56,7 @@ Available commands:
 - `nodeflow run <pipeline_name>`: Run the specified pipeline
 - `nodeflow visualize <pipeline_name>`: Visualize the specified pipeline
 - `nodeflow docs`: Generate and show the documentation for the project
+- `nodeflow version`: Show the version of NodeFlow
 
 ## Installation
 **TO DO**

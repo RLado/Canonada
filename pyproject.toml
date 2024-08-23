@@ -1,12 +1,12 @@
 [project]
 name = "nodeflow"
-version = "0.0.1"
+version = "0.0.10"
 authors = [
   { name="Ricard Lado", email="ricard@lado.one" },
 ]
 description = "NodeFlow is a data science framework that helps you build production-ready streaming pipelines for data processing in Python."
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.11"
 license = {text = "MIT"}
 keywords = ["data science", "streaming", "pipeline", "dataflow", "nodeflow"]
 classifiers = [
@@ -30,3 +30,10 @@ Issues = "https://github.com/pypa/sampleproject/issues"
 [build-system]
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+packages = ["nodeflow"]
+
+[tool.setuptools.package-data]
+"nodeflow" = ["templates/**"]
