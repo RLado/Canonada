@@ -1,6 +1,6 @@
 [project]
 name = "nodeflow"
-version = "0.0.10"
+version = "0.0.30"
 authors = [
   { name="Ricard Lado", email="ricard@lado.one" },
 ]
@@ -24,8 +24,8 @@ classifiers = [
 nodeflow = "nodeflow.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/rlado/NodeFlow"
-Issues = "https://github.com/pypa/sampleproject/issues"
+Homepage = "https://github.com/RLado/NodeFlow"
+Issues = "https://github.com/RLado/NodeFlow/issues"
 
 [build-system]
 requires = ["setuptools>=61.0"]
@@ -33,7 +33,7 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
-packages = ["nodeflow"]
+packages = ["nodeflow", "nodeflow.catalog"]
 
 [tool.setuptools.package-data]
 "nodeflow" = ["templates/**"]
