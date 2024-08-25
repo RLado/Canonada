@@ -1,6 +1,6 @@
 [project]
 name = "nodeflow"
-version = "0.0.30"
+version = "0.0.35"
 authors = [
   { name="Ricard Lado", email="ricard@lado.one" },
 ]
@@ -33,7 +33,7 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
-packages = ["nodeflow", "nodeflow.catalog"]
+packages = ["nodeflow", "nodeflow.catalog", "nodeflow.pipeline"]
 
 [tool.setuptools.package-data]
 "nodeflow" = ["templates/**"]
