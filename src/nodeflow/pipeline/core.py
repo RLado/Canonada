@@ -1,19 +1,20 @@
 from ..logger import logger as log
 from ..catalog import ls as catalog_ls
 from ..catalog import get as catalog_get
+from ..catalog import Datahandler
 
 class Node():
     """
     Node data structure for pipeline construction.
     """
     def __init__(self, name:str, input:list[str], output:list[str], func:callable):
-        self.name = name
-        self.input = set(input)
-        self.output = set(output)
-        self.func = func
+        self.name:str = name
+        self.input: list = input
+        self.output: list = output
+        self.func:func = func
 
-        assert len(self.input) == len(input), "Input list contains duplicates"
-        assert len(self.output) == len(output), "Output list contains duplicates"
+        assert len(set(input)) == len(input), "Input list contains duplicates"
+        assert len(set(output)) == len(output), "Output list contains duplicates"
         assert callable(self.func), "Function is not callable"
     
     def __repr__(self):
@@ -26,11 +27,12 @@ class Pipeline():
     """
     Pipeline data structure for nodeflow construction.
     """
-    def __init__(self, nodes:list[Node]):
-        self.nodes = nodes
-        self.exec_order = []
-        self.input_datahandlers = []
-        self.output_datahandlers = []
+    def __init__(self, name:str, nodes:list[Node]):
+        self.name:str = name
+        self.nodes:list[Node] = nodes
+        self.exec_order:list[Node] = []
+        self.input_datahandlers:dict[str, Datahandler] = {}
+        self.output_datahandlers:dict[str, Datahandler] = {}
 
         # Calculate the execution order & get datahandlers
         self._calc_exec_order()
@@ -40,6 +42,12 @@ class Pipeline():
         Show all nodes in the pipeline
         """
         return "\n".join([str(node) for node in self.nodes])
+    
+    def __call__(self):
+        """
+        Run the pipeline
+        """
+        self.run()
 
     def _calc_exec_order(self):
         """
@@ -74,9 +82,9 @@ class Pipeline():
 
         # Get the necessary datahandlers for input and output
         for input in known_inputs:
-            self.input_datahandlers.append(catalog_get(input))
+            self.input_datahandlers[input] = catalog_get(input)
         for output in catalog_outputs:
-            self.output_datahandlers.append(catalog_get(output))
+            self.output_datahandlers[output] = catalog_get(output)
         
         # Calculate the execution order
         nodes_to_process = self.nodes.copy()
@@ -99,7 +107,7 @@ class Pipeline():
             nodes_idx_processed = []
             # Get all nodes with exclusively known inputs
             for i, node in enumerate(nodes_to_process):
-                if node.input.issubset(known_inputs):
+                if set(node.input).issubset(known_inputs):
                     self.exec_order.append(node)
                     known_inputs.add(*node.output)
                     nodes_idx_processed.append(i)
@@ -114,8 +122,44 @@ class Pipeline():
                 raise ValueError("Pipeline contains a cycle")
                 break
         
+    def run(self):
+        """
+        Execute the pipeline
+        """
+        log.info(f"Running pipeline: {self.name}")
 
+        # From the first node in the exec_order, get the first catalogged datasource
+        master_datahandler: str
+        for input_src in self.exec_order[0].input:
+            if input_src in self.input_datahandlers:
+                master_datahandler = input_src
+                break
 
-
+        # Get a key for the first datahandler and use the key to retireve all other input data for the pipeline
+        for master_key, _ in self.input_datahandlers[master_datahandler]:
+            known_inputs = {}
+            for input_name, datahandler in self.input_datahandlers.items():
+                known_inputs[input_name] = datahandler[master_key]
+                
+            # Execute the nodes in order
+            for node in self.exec_order:
+                log.debug(f"Running node: {node.name} for inputs: {known_inputs.keys()}")
+                # Prepare the inputs for the node
+                node_inputs = [known_inputs[input_name] for input_name in node.input]
+                # Run the node
+                output_data = node.func(*node_inputs)
+                # If the node does not return a tuple, check if a list/tuple is returned and wrap it in a tuple
+                # Check if output_data implements len
+                if not hasattr(output_data, "__len__"):
+                    output_data = (output_data,)
+                if len(output_data) != len(node.output):
+                    if len(node.output) == 1:
+                        output_data = (output_data,)
+                # Update the known inputs
+                known_inputs.update({output: output_data[i] for i, output in enumerate(node.output)})
+                # Check if the output data should be saved
+                for output_name in node.output:
+                    if output_name in self.output_datahandlers:
+                        self.output_datahandlers[output_name].save(known_inputs[output_name])
         
-        
+        log.info(f"Pipeline {self.name} finished")

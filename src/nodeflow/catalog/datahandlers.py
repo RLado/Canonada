@@ -1,5 +1,6 @@
 import json
 import os
+import uuid
 from pathlib import Path
 from ..logger import logger as log
 
@@ -27,8 +28,26 @@ class Datahandler():
         for key, file in self.index.items():
             yield key, self._load(file)
     
-    def __getitem__(self, key):
+    def __getitem__(self, key: str):
         return self._load(self.index[key])
+    
+    def _load(self, file: str) -> dict:
+        """
+        Load a single file from the dataset.
+
+        Args:
+            file (str): Path to the file to load.
+        """
+        raise NotImplementedError("Datahandler must implement the '_load' method.")
+    
+    def save(self, kwargs: dict) -> None:
+        """
+        Save data to a file.
+
+        Args:
+            kwargs (dict): The data to save.
+        """
+        raise NotImplementedError("Datahandler must implement the 'save' method.")
 
 def check_datahandler(datahandler: Datahandler) -> bool:
     """
@@ -143,19 +162,30 @@ class JsonMulti(Datahandler):
         with open(file, "r") as f:
             return json.load(f)
 
-    def save(self, filename: str, data: dict) -> None:
+    def save(self, kwargs:dict) -> None:
         """
         Save data to a json file. Files are saved in the root path of the dataset.
 
         If the file already exists, it will be overwritten.
 
         Args:
-            filename (str): The filename to save the data to.
-            data (dict): The data to save.
+            kwargs (dict): List of keyword arguments. Required arguments:
+                - filename (str): The filename to save the data to.
+                - data (dict): The data to save in json format.
         """
+        # Check if kwargs is a dict and contains the required keys
+        if not isinstance(kwargs, dict):
+            raise ValueError("Invalid format provided provided to JsonMulti. Expected dict with 'filename' and 'data' keys.")
+        # If no filename or data is provided, assume the provided dict is the data
+        if "filename" not in kwargs or "data" not in kwargs:
+            data = kwargs.copy()
+            kwargs={"filename": None, "data": data}
+        # If no filename is provided, generate a random one
+        if kwargs["filename"] is None:
+            kwargs["filename"] = str(uuid.uuid4())
 
-        with open(os.path.join(self.path, filename, ".json"), "w") as f:
-            json.dump(data, f)
+        with open(os.path.join(self.path, f"{kwargs["filename"]}.json"), "w") as f:
+            json.dump(kwargs["data"], f)
         
 # Register of all built in datasets
 available_datahandlers = {
