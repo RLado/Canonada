@@ -1,6 +1,7 @@
 from ..logger import logger as log
 from ..catalog import ls as catalog_ls
 from ..catalog import get as catalog_get
+from ..catalog import params as catalog_params
 from ..catalog import Datahandler
 
 class Node():
@@ -69,6 +70,11 @@ class Pipeline():
             if output in catalog_ls():
                 catalog_outputs.add(output)
         
+        # Make sure that no outputs are parameters
+        params = {f"params:{key}" for key in catalog_params()}
+        if len(catalog_outputs.intersection(params)) > 0:
+            raise ValueError(f"Output to a node cannot be a parameter: {catalog_outputs.intersection(params)}")
+
         # Check that no outputs can be known inputs
         known_inputs: set = set()
         for node in self.nodes:
@@ -85,6 +91,9 @@ class Pipeline():
             self.input_datahandlers[input] = catalog_get(input)
         for output in catalog_outputs:
             self.output_datahandlers[output] = catalog_get(output)
+        
+        # Add the parameters to the known inputs to calculate the execution order
+        known_inputs.update(params)
         
         # Calculate the execution order
         nodes_to_process = self.nodes.copy()
@@ -121,12 +130,51 @@ class Pipeline():
             if i > max_iter:
                 raise ValueError("Pipeline contains a cycle")
                 break
+    
+    def run_once(self, known_inputs:dict[str, any]) -> dict[str, any]:
+        """
+        Run the pipeline once with known inputs.
+
+        Args:
+            known_inputs (dict[str, any]): A dictionary with known inputs.
+
+        Returns:
+            dict[str, any]: A dictionary with the known outputs.
+        """
+        # Read the project parameters
+        params = catalog_params()
+
+        # Add parameters to the known inputs
+        known_inputs.update({f"params:{key}": value for key, value in params.items()})
+
+        # Execute the nodes in order
+        for node in self.exec_order:
+            log.debug(f"Running node: {node.name} for inputs: {known_inputs.keys()}")
+            # Prepare the inputs for the node
+            node_inputs = [known_inputs[input_name] for input_name in node.input]
+            # Run the node
+            output_data = node.func(*node_inputs)
+            # If the node does not return a tuple, check if a list/tuple is returned and wrap it in a tuple
+            # Check if output_data implements len
+            if not hasattr(output_data, "__len__"):
+                output_data = (output_data,)
+            if len(output_data) != len(node.output):
+                if len(node.output) == 1:
+                    output_data = (output_data,)
+            # Update the known inputs
+            known_inputs.update({output: output_data[i] for i, output in enumerate(node.output)})
+        
+        return known_inputs # Now being the known outputs       
         
     def run(self):
         """
         Execute the pipeline
         """
         log.info(f"Running pipeline: {self.name}")
+
+        # Read the project parameters
+        params = catalog_params()
+        params = {f"params:{key}": value for key, value in params.items()}
 
         # From the first node in the exec_order, get the first catalogged datasource
         master_datahandler: str
@@ -137,7 +185,7 @@ class Pipeline():
 
         # Get a key for the first datahandler and use the key to retireve all other input data for the pipeline
         for master_key, _ in self.input_datahandlers[master_datahandler]:
-            known_inputs = {}
+            known_inputs = params.copy()
             for input_name, datahandler in self.input_datahandlers.items():
                 known_inputs[input_name] = datahandler[master_key]
                 

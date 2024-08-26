@@ -55,3 +55,18 @@ def ls() -> list:
 
     # List all available datasets
     return list(catalog.keys())
+
+def params() -> dict[str, any]:
+    """
+    Get parameters.
+
+    Returns:
+        dict: A dictionary with the project's parameters.
+    """
+    
+    # Read the parameters file
+    catalog: dict
+    with open("config/parameters.toml", "rb") as f:
+        catalog = tomllib.load(f)
+
+    return catalog
