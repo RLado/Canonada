@@ -3,7 +3,7 @@ import sys
 import tomllib
 
 from ..logger import logger as log
-from .datahandlers import Datahandler, check_datahandler, available_datahandlers
+from ._datahandlers import Datahandler, check_datahandler, available_datahandlers
 
 # Import user defined pipelines
 sys.path.append(os.getcwd())
