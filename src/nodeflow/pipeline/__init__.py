@@ -2,5 +2,5 @@
 Manage pipelines and nodes
 """
 
-from .core import Node as Node
-from .core import Pipeline as Pipeline
+from ._core import Node as Node
+from ._core import Pipeline as Pipeline
