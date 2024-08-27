@@ -189,5 +189,5 @@ class JsonMulti(Datahandler):
         
 # Register of all built in datasets
 available_datahandlers = {
-    "json_multi": JsonMulti
+    "nodeflow.json_multi": JsonMulti
 }

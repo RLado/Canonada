@@ -25,6 +25,11 @@ config/
     credentials.toml
 data/
     ...
+datahandlers/
+    __init__.py
+    custom_datahandler_1.py
+    custom_datahandler_2.py
+    ...
 notebooks/
     ...
 pipelines/

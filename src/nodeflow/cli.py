@@ -32,6 +32,7 @@ except ImportError as e:
     if sys.argv[1] != "new":
         log.error(e)
         log.error("No pipelines module found in the project directory. Have you initialized a project?")
+        sys.exit(1)
 
 # Reset the log level
 log.setLevel(config['logging']['level'])
@@ -152,6 +153,7 @@ def create_new_project(name: str) -> None:
     dirs = [
         "config",
         "data",
+        "datahandlers",
         "notebooks",
         "pipelines",
         "pipelines/nodes",
@@ -169,6 +171,7 @@ def create_new_project(name: str) -> None:
         "config/catalog.toml",
         "config/parameters.toml",
         "config/credentials.toml",
+        "datahandlers/__init__.py",
         "pipelines/__init__.py",
         "pipelines/nodes/__init__.py",
         "systems/__init__.py",

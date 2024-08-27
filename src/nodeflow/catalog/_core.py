@@ -1,7 +1,22 @@
+import os
+import sys
 import tomllib
 
 from ..logger import logger as log
 from .datahandlers import Datahandler, check_datahandler, available_datahandlers
+
+# Import user defined pipelines
+sys.path.append(os.getcwd())
+try:
+    from datahandlers import available_datahandlers as user_available_datahandlers
+except ImportError as e:
+    log.error(e)
+    log.error("No datahandlers module found in the project directory. Have you initialized a project?")
+    sys.exit(1)
+
+# Add user defined datahandlers to the available datahandlers
+available_datahandlers.update(user_available_datahandlers)
+
 
 def get(dataset_name: str) -> Datahandler:
     """
@@ -20,25 +35,19 @@ def get(dataset_name: str) -> Datahandler:
         catalog = tomllib.load(f)
 
     # Search for the specified dataset
-    dh_type = catalog[dataset_name]["type"].split(".")
+    dh_type = catalog[dataset_name]["type"]
 
-    if dh_type[0].strip() == "nodeflow":
-        if dh_type[1] not in available_datahandlers:
-            raise ValueError(f"Dataset type '{dh_type[1]}' not found")
-            return
-        
-        # Create the datahandler
-        datahandler = available_datahandlers[dh_type[1]](dataset_name, catalog[dataset_name]["keys"], catalog[dataset_name])
-
-        if not check_datahandler(datahandler):
-            log.warning(f"Datahandler '{dh_type[1]}' does not comply with the datahandler interface. This may cause isssues.")
-        
-        return datahandler
-
-    else:
-        raise ValueError(f"Dataset type {dh_type} not supported")
+    if dh_type not in available_datahandlers:
+        raise ValueError(f"Dataset type '{dh_type}' not found")
+        return
     
-    return
+    # Create the datahandler
+    datahandler = available_datahandlers[dh_type](dataset_name, catalog[dataset_name]["keys"], catalog[dataset_name])
+
+    if not check_datahandler(datahandler):
+        log.warning(f"Datahandler '{dh_type}' does not comply with the datahandler interface. This may cause isssues.")
+    
+    return datahandler
 
 def ls() -> list:
     """

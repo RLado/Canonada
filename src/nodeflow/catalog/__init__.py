@@ -2,7 +2,7 @@
 Manage the data catalog for the nodeflow.
 """
 
-from .core import get as get
-from .core import ls as ls
-from .core import params as params
-from .datahandlers import Datahandler as Datahandler
+from ._core import get as get
+from ._core import ls as ls
+from ._core import params as params
+from ._datahandlers import Datahandler as Datahandler
