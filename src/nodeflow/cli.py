@@ -1,12 +1,25 @@
 import sys
 import os
 import shutil
+import tomllib
 
 from ._version import __version__
 from .logger import logger as log
 from .catalog import ls as catalog_ls
 from .catalog import params as catalog_params
 from .pipeline import Pipeline
+
+# Read nodeflow.toml
+config: dict
+try:
+    with open("nodeflow.toml", "rb") as f:
+        config = tomllib.load(f)
+except FileNotFoundError:
+    config = {
+        'logging': {
+            'level': 'INFO'
+        }
+    }
 
 # Set log level to WARNING for CLI imports
 log.setLevel("WARNING")
@@ -19,7 +32,7 @@ except ImportError:
     log.error("No pipelines module found in the project directory. Have you initialized a project?")
 
 # Reset the log level
-log.setLevel(log.config['logging']['level'])
+log.setLevel(config['logging']['level'])
 
 def main():
     args = sys.argv
