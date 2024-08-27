@@ -27,15 +27,20 @@ data/
     ...
 notebooks/
     ...
-nodes/
-    __init__.py
-    node_group_1.py
-    node_group_2.py
-    ...
 pipelines/
     __init__.py
     pipeline_1.py
     pipeline_2.py
+    nodes_1/
+        __init__.py
+        node_1.py
+        node_2.py
+        ...
+    nodes_2/
+        __init__.py
+        node_3.py
+        node_4.py
+        ...
     ...
 systems/
     __init__.py

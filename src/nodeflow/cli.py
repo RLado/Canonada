@@ -28,8 +28,10 @@ log.setLevel("WARNING")
 sys.path.append(os.getcwd())
 try:
     from pipelines import *
-except ImportError:
-    log.error("No pipelines module found in the project directory. Have you initialized a project?")
+except ImportError as e:
+    if sys.argv[1] != "new":
+        log.error(e)
+        log.error("No pipelines module found in the project directory. Have you initialized a project?")
 
 # Reset the log level
 log.setLevel(config['logging']['level'])
@@ -151,8 +153,8 @@ def create_new_project(name: str) -> None:
         "config",
         "data",
         "notebooks",
-        "nodes",
         "pipelines",
+        "pipelines/nodes",
         "systems",
         "tests",
     ]
@@ -167,8 +169,8 @@ def create_new_project(name: str) -> None:
         "config/catalog.toml",
         "config/parameters.toml",
         "config/credentials.toml",
-        "nodes/__init__.py",
         "pipelines/__init__.py",
+        "pipelines/nodes/__init__.py",
         "systems/__init__.py",
     ]
 
