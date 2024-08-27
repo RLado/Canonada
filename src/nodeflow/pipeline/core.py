@@ -28,6 +28,15 @@ class Pipeline():
     """
     Pipeline data structure for nodeflow construction.
     """
+    registry = []
+
+    @classmethod
+    def ls(cls):
+        """
+        List all available pipelines
+        """
+        return cls.registry
+
     def __init__(self, name:str, nodes:list[Node]):
         self.name:str = name
         self.nodes:list[Node] = nodes
@@ -37,6 +46,9 @@ class Pipeline():
 
         # Calculate the execution order & get datahandlers
         self._calc_exec_order()
+
+        # Register the pipeline
+        Pipeline.registry.append(self)
     
     def __repr__(self):
         """

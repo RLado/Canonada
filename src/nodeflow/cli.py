@@ -4,9 +4,28 @@ import shutil
 
 from ._version import __version__
 from .logger import logger as log
+from .catalog import ls as catalog_ls
+from .catalog import params as catalog_params
+from .pipeline import Pipeline
+
+# Set log level to WARNING for CLI imports
+log.setLevel("WARNING")
+
+# Import user defined pipelines
+sys.path.append(os.getcwd())
+try:
+    from pipelines import *
+except ImportError:
+    log.error("No pipelines module found in the project directory. Have you initialized a project?")
+
+# Reset the log level
+log.setLevel(log.config['logging']['level'])
 
 def main():
     args = sys.argv
+    if len(args) < 2:
+        print_usage()
+        sys.exit(1)
 
     match args[1]:
         case "new":
@@ -17,14 +36,72 @@ def main():
             # Create a new project
             print(f"Creating new project: {args[2]}")
             create_new_project(args[2])
-
-        case "run":
+        
+        case "catalog":
             if len(args) < 3:
+                log.error("No command provided. Options are 'list' and 'params'")
+                sys.exit(1)
+
+            match args[2]:
+                case "list":
+                    # List all available datasets
+                    datasets = catalog_ls()
+                    print(datasets)
+
+                case "params":
+                    # Get the project parameters
+                    params = catalog_params()
+                    print(params)
+
+                case _:
+                    log.error("Command not recognized. Options are 'list' and 'params'")
+                    print_usage()
+                    sys.exit(1)  
+
+        case "registry":
+            if len(args) < 3:
+                log.error("No command provided. Options are 'pipelines' and 'systems'")
+                sys.exit(1)
+
+            match args[2]:
+                case "pipelines":
+                    # List all available pipelines
+                    for pipeline in Pipeline.registry:
+                        print(pipeline.name)
+
+                case "systems":
+                    # List all available systems
+                    log.info("Listing all available systems (under development)")
+
+                case _:
+                    log.error("Command not recognized. Options are 'pipelines' and 'systems'")
+                    print_usage()
+                    sys.exit(1)          
+            
+        case "run":
+            if len(args) < 4:
                 log.error("No pipeline(s) or system(s) name provided")
                 sys.exit(1)
             
             # Run requested pipeline(s) or system(s)
-            log.info("Running pipeline or system (under development)")
+            match args[2]:
+                case "pipelines":
+                    for pipeline in args[3:]:
+                        for p in Pipeline.registry:
+                            if p.name == pipeline:
+                                p()
+                                break
+                        else:
+                            log.error(f"Pipeline {pipeline} not found")
+                            sys.exit(1)
+
+                case "systems":
+                    log.info("Running system (under development)")
+
+                case _:
+                    log.error("Command not recognized. Options are 'pipelines' and 'systems'")      
+                    print_usage()
+                    sys.exit(1)  
 
         case "visualize":
             if len(args) < 3:
@@ -114,9 +191,11 @@ def print_usage() -> None:
 Usage: nodeflow <command> <args>
 Commands:
     new <project_name> - Create a new project
-    run <pipeline/system> - Run a pipeline or system
-    visualize <pipeline/system> - Visualize a pipeline or system
-    docs - Generate and serve documentation
+    catalog <list/params> - List all available datasets or get the project parameters
+    registry <pipelines/systems> - List all available pipelines or systems
+    run <pipeline/system> <name> - Run a pipeline or system
+    visualize <pipeline/system> - Visualize a pipeline or system [not implemented]
+    docs - Generate and serve documentation [not implemented]
     version - Print the version of NodeFlow
     
 """)

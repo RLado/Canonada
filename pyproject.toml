@@ -1,6 +1,6 @@
 [project]
 name = "nodeflow"
-version = "0.0.51"
+version = "0.0.58"
 authors = [
   { name="Ricard Lado", email="ricard@lado.one" },
 ]
