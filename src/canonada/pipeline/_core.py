@@ -8,11 +8,27 @@ class Node():
     """
     Node data structure for pipeline construction.
     """
+
+    registry = []
+
+    @classmethod
+    def ls(cls):
+        """
+        List all available nodes
+        """
+        return cls.registry
+
     def __init__(self, name:str, input:list[str], output:list[str], func:callable):
         self.name:str = name
         self.input: list = input
         self.output: list = output
         self.func:func = func
+
+        # Check that the node name is unique and not empty
+        if self.name == "":
+            raise ValueError("Node name cannot be empty")
+        if self.name in [node.name for node in Node.registry]:
+            raise ValueError(f"Node name '{self.name}' is not unique")
 
         assert len(set(input)) == len(input), "Input list contains duplicates"
         assert len(set(output)) == len(output), "Output list contains duplicates"

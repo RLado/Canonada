@@ -12,6 +12,15 @@ class Datahandler():
     Datahandlers can be given keys to build an index with, this will be necessary for nodes that load from multiple datasets at once. If no keys are provided, the specific implementations of datahandlers will be responsible for building the index or erroring out.
     """
 
+    registry = []
+
+    @classmethod
+    def ls(cls):
+        """
+        List all available datahandlers
+        """
+        return cls.registry
+
     def __init__(self, name: str, dh_type: str, keys: list, kwargs: dict):
         self.name = name
         self.type = dh_type
@@ -19,7 +28,16 @@ class Datahandler():
         self.kwargs = kwargs
         self.index = {}
 
+        # Check that the datahandler type is unique and not empty
+        if self.type == "":
+            raise ValueError("Datahandler name cannot be empty")
+        if self.type in [dh.type for dh in Datahandler.registry]:
+            raise ValueError(f"Datahandler type '{self.type}' is not unique")
+
         log.info(f"Initializing datahandler '{self.type}' for '{self.name}'")
+
+        # Register the datahandler
+        Datahandler.registry.append(self)
     
     def __len__(self):
         return len(self.index)
