@@ -44,6 +44,13 @@ class Pipeline():
         self.input_datahandlers:dict[str, Datahandler] = {}
         self.output_datahandlers:dict[str, Datahandler] = {}
 
+        # Check that the pipeline name is unique and not empty
+        if self.name == "":
+            raise ValueError("Pipeline name cannot be empty")
+
+        if self.name in [pipe.name for pipe in Pipeline.registry]:
+            raise ValueError(f"Pipeline name '{self.name}' is not unique")
+
         # Calculate the execution order & get datahandlers
         self._calc_exec_order()
 

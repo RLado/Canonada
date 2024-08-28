@@ -8,6 +8,7 @@ from .logger import logger as log
 from .catalog import ls as catalog_ls
 from .catalog import params as catalog_params
 from .pipeline import Pipeline
+from .system import System
 
 # Read nodeflow.toml
 config: dict
@@ -25,14 +26,21 @@ except FileNotFoundError:
 log.setLevel("WARNING")
 
 # Import user defined pipelines
-sys.path.append(os.getcwd())
-try:
-    from pipelines import *
-except ImportError as e:
-    if sys.argv[1] != "new":
-        log.error(e)
-        log.error("No pipelines module found in the project directory. Have you initialized a project?")
-        sys.exit(1)
+if len(sys.argv) > 1 and sys.argv[1] != "new":
+    sys.path.append(os.getcwd())
+    try:
+        from pipelines import *
+    except ImportError as e:
+            log.error(e)
+            log.error("No pipelines module found in the project directory. Have you initialized a project?")
+            sys.exit(1)
+
+    try:
+        from systems import *
+    except ImportError as e:
+            log.error(e)
+            log.error("No systems module found in the project directory. Have you initialized a project?")
+            sys.exit(1)
 
 # Reset the log level
 log.setLevel(config['logging']['level'])
@@ -87,7 +95,8 @@ def main():
 
                 case "systems":
                     # List all available systems
-                    log.info("Listing all available systems (under development)")
+                    for system in System.registry:
+                        print(system.name)
 
                 case _:
                     log.error("Command not recognized. Options are 'pipelines' and 'systems'")
@@ -112,7 +121,14 @@ def main():
                             sys.exit(1)
 
                 case "systems":
-                    log.info("Running system (under development)")
+                    for system in args[3:]:
+                        for s in System.registry:
+                            if s.name == system:
+                                s()
+                                break
+                        else:
+                            log.error(f"System {system} not found")
+                            sys.exit(1)
 
                 case _:
                     log.error("Command not recognized. Options are 'pipelines' and 'systems'")      
