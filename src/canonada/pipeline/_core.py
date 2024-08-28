@@ -1,8 +1,11 @@
+from concurrent.futures import ThreadPoolExecutor
+
 from ..logger import logger as log
 from ..catalog import ls as catalog_ls
 from ..catalog import get as catalog_get
 from ..catalog import params as catalog_params
 from ..catalog import Datahandler
+
 
 class Node():
     """
@@ -59,6 +62,7 @@ class Pipeline():
         self.exec_order:list[Node] = []
         self.input_datahandlers:dict[str, Datahandler] = {}
         self.output_datahandlers:dict[str, Datahandler] = {}
+        self.max_workers: int = None
 
         # Check that the pipeline name is unique and not empty
         if self.name == "":
@@ -218,15 +222,18 @@ class Pipeline():
                 master_datahandler = input_src
                 break
 
-        # Get a key for the first datahandler and use the key to retireve all other input data for the pipeline
-        for master_key, _ in self.input_datahandlers[master_datahandler]:
+        def run_pass(master: dict[str, Datahandler]):
+            """
+            Run a single pass of the pipeline
+            """
+            master_key, _ = master
+
             known_inputs = params.copy()
             for input_name, datahandler in self.input_datahandlers.items():
                 known_inputs[input_name] = datahandler[master_key]
                 
             # Execute the nodes in order
             for node in self.exec_order:
-                log.debug(f"Running node: {node.name} for inputs: {known_inputs.keys()}")
                 # Prepare the inputs for the node
                 node_inputs = [known_inputs[input_name] for input_name in node.input]
                 # Run the node
@@ -244,5 +251,9 @@ class Pipeline():
                 for output_name in node.output:
                     if output_name in self.output_datahandlers:
                         self.output_datahandlers[output_name].save(known_inputs[output_name])
+
+        # Get a key for the first datahandler and use the key to retireve all other input data for the pipeline
+        with ThreadPoolExecutor(max_workers=self.max_workers) as mpool:
+            mpool.map(run_pass, self.input_datahandlers[master_datahandler])            
         
         log.info(f"Pipeline {self.name} finished")
