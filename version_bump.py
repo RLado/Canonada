@@ -44,11 +44,11 @@ if __name__ == "__main__":
     with open("pyproject.toml", "w") as f:
         f.write(contents)
 
-    # Open src/nodeflow/_version.py for writing
-    with open("src/nodeflow/_version.py", "r") as f:
+    # Open src/canonada/_version.py for writing
+    with open("src/canonada/_version.py", "r") as f:
         contents = f.read()
         contents = contents.replace(f'__version__ = "{version}"', f'__version__ = "{new_version}"')
-    with open("src/nodeflow/_version.py", "w") as f:
+    with open("src/canonada/_version.py", "w") as f:
         f.write(contents)
     
     print(f"Version {version} bumped up to {new_version}")

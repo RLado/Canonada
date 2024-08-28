@@ -10,10 +10,10 @@ from .catalog import params as catalog_params
 from .pipeline import Pipeline
 from .system import System
 
-# Read nodeflow.toml
+# Read canonada.toml
 config: dict
 try:
-    with open("nodeflow.toml", "rb") as f:
+    with open("canonada.toml", "rb") as f:
         config = tomllib.load(f)
 except FileNotFoundError:
     config = {
@@ -181,7 +181,7 @@ def main():
 
         case "version":
             # Print the version of the package
-            print(f"NodeFlow version: {__version__}")
+            print(f"Canonada version: {__version__}")
 
         case _:
             log.error("Command not recognized")
@@ -215,7 +215,7 @@ def create_new_project(name: str) -> None:
     # Create project files
     files = [
         "gitignore",
-        "nodeflow.toml",
+        "canonada.toml",
         "config/catalog.toml",
         "config/parameters.toml",
         "config/credentials.toml",
@@ -240,13 +240,13 @@ def create_new_project(name: str) -> None:
             case "gitignore":
                 os.rename(file, ".gitignore")
 
-            case "nodeflow.toml":
-                # Add name of the project to the nodeflow.toml file
-                with open("nodeflow.toml", "r") as f:
+            case "canonada.toml":
+                # Add name of the project to the canonada.toml file
+                with open("canonada.toml", "r") as f:
                     content = f.read()
                     content = content.replace("$project_name", name)
                 # Write the updated content back to the file
-                with open("nodeflow.toml", "w") as f:
+                with open("canonada.toml", "w") as f:
                     f.write(content)   
 
 def print_usage() -> None:
@@ -254,15 +254,15 @@ def print_usage() -> None:
     Print the usage string for the CLI
     """
     print("""
-Usage: nodeflow <command> <args>
+Usage: canonada <command> <args>
 Commands:
     new <project_name> - Create a new project
     catalog [list/params] - List all available datasets or get the project parameters
     registry [pipelines/systems] - List all available pipelines or systems
     run [pipelines/systems] <name(s)> - Run a pipeline or system
-    view [pipelines/systems] <name(s)>- View a pipeline or system
+    view [pipelines/systems] <name(s)> - View a pipeline or system
     docs - Generate and serve documentation [not implemented]
-    version - Print the version of NodeFlow
+    version - Print the version of Canonada
     
 """)
 

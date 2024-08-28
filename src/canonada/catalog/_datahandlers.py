@@ -115,7 +115,7 @@ class JsonMulti(Datahandler):
     """
 
     def __init__(self, name: str, keys: set, kwargs: dict):
-        super().__init__(name, "nodeflow.json_multi", keys, kwargs)
+        super().__init__(name, "canonada.json_multi", keys, kwargs)
         if "path" not in kwargs:
             raise ValueError("No path provided for json_multi datahandler.")
         self.path = kwargs["path"]
@@ -189,5 +189,5 @@ class JsonMulti(Datahandler):
         
 # Register of all built in datasets
 available_datahandlers = {
-    "nodeflow.json_multi": JsonMulti
+    "canonada.json_multi": JsonMulti
 }

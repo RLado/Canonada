@@ -1,10 +1,10 @@
 import tomllib
 import logging
 
-# Read nodeflow.toml
+# Read canonada.toml
 config: dict
 try:
-    with open("nodeflow.toml", "rb") as f:
+    with open("canonada.toml", "rb") as f:
         config = tomllib.load(f)
 except FileNotFoundError:
     config = {
@@ -14,7 +14,7 @@ except FileNotFoundError:
     }
 
 # Create a logger
-logger = logging.getLogger('nodeflow')
+logger = logging.getLogger('canonada')
 logger.setLevel(config['logging']['level'])
 logging.basicConfig(format="%(asctime)s - %(name)s: [%(levelname)s]: %(message)s")
 

@@ -6,7 +6,7 @@ from ..pipeline import Pipeline
 
 class System():
     """
-    System data structure for nodeflow construction.
+    System data structure for canonada construction.
     """
     registry = []
 

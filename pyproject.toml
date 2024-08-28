@@ -1,14 +1,14 @@
 [project]
-name = "nodeflow"
-version = "0.0.78"
+name = "canonada"
+version = "0.0.81"
 authors = [
   { name="Ricard Lado", email="ricard@lado.one" },
 ]
-description = "NodeFlow is a data science framework that helps you build production-ready streaming pipelines for data processing in Python."
+description = "Canonada is a data science framework that helps you build production-ready streaming pipelines for data processing in Python."
 readme = "README.md"
 requires-python = ">=3.11"
 license = {text = "MIT"}
-keywords = ["data science", "streaming", "pipeline", "dataflow", "nodeflow"]
+keywords = ["data science", "streaming", "pipeline", "dataflow", "canonada"]
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
@@ -21,11 +21,11 @@ classifiers = [
 [project.optional-dependencies]
 
 [project.scripts]
-nodeflow = "nodeflow.cli:main"
+canonada = "canonada.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/RLado/NodeFlow"
-Issues = "https://github.com/RLado/NodeFlow/issues"
+Homepage = "https://github.com/RLado/Canonada"
+Issues = "https://github.com/RLado/Canonada/issues"
 
 [build-system]
 requires = ["setuptools>=61.0"]
@@ -33,7 +33,7 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
-packages = ["nodeflow", "nodeflow.catalog", "nodeflow.pipeline", "nodeflow.system"]
+packages = ["canonada", "canonada.catalog", "canonada.pipeline", "canonada.system"]
 
 [tool.setuptools.package-data]
-"nodeflow" = ["templates/**"]
+"canonada" = ["templates/**"]

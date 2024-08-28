@@ -26,7 +26,7 @@ class Node():
     
 class Pipeline():
     """
-    Pipeline data structure for nodeflow construction.
+    Pipeline data structure for canonada construction.
     """
     registry = []
 

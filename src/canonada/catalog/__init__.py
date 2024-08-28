@@ -1,5 +1,5 @@
 """
-Manage the data catalog for the nodeflow.
+Manage the data catalog for the canonada.
 """
 
 from ._core import get as get
