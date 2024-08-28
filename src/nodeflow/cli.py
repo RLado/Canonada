@@ -55,6 +55,7 @@ def main():
         case "new":
             if len(args) < 3:
                 log.error("No project name provided")
+                print_usage()
                 sys.exit(1)
 
             # Create a new project
@@ -64,6 +65,7 @@ def main():
         case "catalog":
             if len(args) < 3:
                 log.error("No command provided. Options are 'list' and 'params'")
+                print_usage()
                 sys.exit(1)
 
             match args[2]:
@@ -80,11 +82,11 @@ def main():
                 case _:
                     log.error("Command not recognized. Options are 'list' and 'params'")
                     print_usage()
-                    sys.exit(1)  
 
         case "registry":
             if len(args) < 3:
                 log.error("No command provided. Options are 'pipelines' and 'systems'")
+                print_usage()
                 sys.exit(1)
 
             match args[2]:
@@ -100,48 +102,78 @@ def main():
 
                 case _:
                     log.error("Command not recognized. Options are 'pipelines' and 'systems'")
-                    print_usage()
-                    sys.exit(1)          
+                    print_usage()       
             
         case "run":
             if len(args) < 4:
                 log.error("No pipeline(s) or system(s) name provided")
+                print_usage()
                 sys.exit(1)
             
             # Run requested pipeline(s) or system(s)
             match args[2]:
                 case "pipelines":
                     for pipeline in args[3:]:
+                        ran = False
                         for p in Pipeline.registry:
                             if p.name == pipeline:
                                 p()
+                                ran = True
                                 break
-                        else:
+                        if not ran:
                             log.error(f"Pipeline {pipeline} not found")
-                            sys.exit(1)
 
                 case "systems":
                     for system in args[3:]:
                         for s in System.registry:
+                            ran = False
                             if s.name == system:
                                 s()
+                                ran = True
                                 break
-                        else:
+                        if not ran:
                             log.error(f"System {system} not found")
-                            sys.exit(1)
 
                 case _:
                     log.error("Command not recognized. Options are 'pipelines' and 'systems'")      
                     print_usage()
                     sys.exit(1)  
 
-        case "visualize":
-            if len(args) < 3:
+        case "view":
+            if len(args) < 4:
                 log.error("No pipeline or system name provided")
+                print_usage()
                 sys.exit(1)
             
             # Visualize requested pipeline or system
-            log.info("Visualizing pipeline or system (under development)")
+            match args[2]:
+                case "pipelines":
+                    for pipeline in args[3:]:
+                        viewed = False
+                        for p in Pipeline.registry:
+                            if p.name == pipeline:
+                                print(p)
+                                viewed = True
+                                break
+                        if not viewed:
+                            log.error(f"Pipeline {pipeline} not found")
+
+                
+                case "systems":
+                    for system in args[3:]:
+                        viewed = False
+                        for s in System.registry:
+                            if s.name == system:
+                                print(s)
+                                viewed = True
+                                break
+                        if not viewed:
+                            log.error(f"System {system} not found")
+                        
+                case _:
+                    log.error("Command not recognized. Options are 'pipelines' and 'systems'")      
+                    print_usage()
+                    sys.exit(1)
 
         case "docs":
             # Generate and serve documentation
@@ -225,10 +257,10 @@ def print_usage() -> None:
 Usage: nodeflow <command> <args>
 Commands:
     new <project_name> - Create a new project
-    catalog <list/params> - List all available datasets or get the project parameters
-    registry <pipelines/systems> - List all available pipelines or systems
-    run <pipeline/system> <name> - Run a pipeline or system
-    visualize <pipeline/system> - Visualize a pipeline or system [not implemented]
+    catalog [list/params] - List all available datasets or get the project parameters
+    registry [pipelines/systems] - List all available pipelines or systems
+    run [pipelines/systems] <name(s)> - Run a pipeline or system
+    view [pipelines/systems] <name(s)>- View a pipeline or system
     docs - Generate and serve documentation [not implemented]
     version - Print the version of NodeFlow
     
