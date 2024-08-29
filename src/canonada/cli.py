@@ -33,14 +33,14 @@ if len(sys.argv) > 1 and sys.argv[1] != "new":
     except ImportError as e:
             log.error(e)
             log.error("No pipelines module found in the project directory. Have you initialized a project?")
-            sys.exit(1)
+            raise e
 
     try:
         from systems import *
     except ImportError as e:
             log.error(e)
             log.error("No systems module found in the project directory. Have you initialized a project?")
-            sys.exit(1)
+            raise e
 
 # Reset the log level
 log.setLevel(config['logging']['level'])
@@ -49,14 +49,14 @@ def main():
     args = sys.argv
     if len(args) < 2:
         print_usage()
-        sys.exit(1)
+        raise ValueError("No command provided")
 
     match args[1]:
         case "new":
             if len(args) < 3:
                 log.error("No project name provided")
                 print_usage()
-                sys.exit(1)
+                raise ValueError("No project name provided")
 
             # Create a new project
             print(f"Creating new project: {args[2]}")
@@ -66,7 +66,7 @@ def main():
             if len(args) < 3:
                 log.error("No command provided. Options are 'list' and 'params'")
                 print_usage()
-                sys.exit(1)
+                raise ValueError("No command provided")
 
             match args[2]:
                 case "list":
@@ -87,7 +87,7 @@ def main():
             if len(args) < 3:
                 log.error("No command provided. Options are 'pipelines' and 'systems'")
                 print_usage()
-                sys.exit(1)
+                raise ValueError("No command provided")
 
             match args[2]:
                 case "pipelines":
@@ -108,7 +108,7 @@ def main():
             if len(args) < 4:
                 log.error("No pipeline(s) or system(s) name provided")
                 print_usage()
-                sys.exit(1)
+                raise ValueError("No pipeline(s) or system(s) name provided")
             
             # Run requested pipeline(s) or system(s)
             match args[2]:
@@ -137,13 +137,13 @@ def main():
                 case _:
                     log.error("Command not recognized. Options are 'pipelines' and 'systems'")      
                     print_usage()
-                    sys.exit(1)  
+                    raise ValueError ("Command not recognized")
 
         case "view":
             if len(args) < 4:
                 log.error("No pipeline or system name provided")
                 print_usage()
-                sys.exit(1)
+                raise ValueError("No pipeline or system name provided")
             
             # Visualize requested pipeline or system
             match args[2]:
@@ -173,7 +173,7 @@ def main():
                 case _:
                     log.error("Command not recognized. Options are 'pipelines' and 'systems'")      
                     print_usage()
-                    sys.exit(1)
+                    raise ValueError("Command not recognized")
 
         case "docs":
             # Generate and serve documentation
@@ -186,7 +186,7 @@ def main():
         case _:
             log.error("Command not recognized")
             print_usage()
-            sys.exit(1)
+            raise ValueError("Command not recognized")
 
 
 def create_new_project(name: str) -> None:
@@ -229,7 +229,7 @@ def create_new_project(name: str) -> None:
         # Check if the file already exists
         if os.path.exists(file):
             log.error(f"File {file} already exists")
-            sys.exit(1)
+            raise ValueError(f"File {file} already exists")
 
         # Copy from the package to the project
         shutil.copyfile(os.path.join(os.path.dirname(__file__), "templates", file), file)
@@ -267,4 +267,10 @@ Commands:
 """)
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except ValueError:
+        sys.exit(1)
+    except Exception as e:
+        log.error(e)
+        sys.exit(1)

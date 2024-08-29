@@ -32,7 +32,7 @@ if __name__ == "__main__":
                 patch = int(patch) + 1
             case _:
                 print("Invalid argument")
-                sys.exit(1)
+                raise ValueError("Invalid argument")
     
     new_version = f"{major}.{minor}.{patch}"
 
