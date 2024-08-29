@@ -74,10 +74,21 @@ Commands:
 ```
 
 ## Installation
-**TO DO**
+Canonada is available on PyPI and can be installed using pip:
+```bash
+pip install canonada
+```
+
+## Getting Started
+Create a new project:
+```bash
+canonada new my_project
+```
+
+Guide coming soon...
 
 ## Documentation
-**TO DO**
+Coming soon...
 
 ## Contributing
-**TO DO**
+Coming soon...
