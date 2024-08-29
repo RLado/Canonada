@@ -200,7 +200,7 @@ class JsonMulti(Datahandler):
         if kwargs["filename"] is None:
             kwargs["filename"] = str(uuid.uuid4())
 
-        with open(os.path.join(self.path, f"{kwargs["filename"]}.json"), "w") as f:
+        with open(os.path.join(self.path, f"{kwargs['filename']}.json"), "w") as f:
             json.dump(kwargs["data"], f)
         
 # Register of all built in datasets
