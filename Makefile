@@ -6,6 +6,10 @@ clean:
 # Clean the build directory
 	@rm -rf dist
 
+test:
+# Run the tests
+	@python -m unittest
+
 bump_patch:
 # Increase the patch number
 	@python version_bump.py
