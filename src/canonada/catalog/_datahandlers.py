@@ -28,11 +28,9 @@ class Datahandler():
         self.kwargs = kwargs
         self.index = {}
 
-        # Check that the datahandler type is unique and not empty
+        # Check that the datahandler type is not empty
         if self.type == "":
             raise ValueError("Datahandler name cannot be empty")
-        if self.type in [dh.type for dh in Datahandler.registry]:
-            raise ValueError(f"Datahandler type '{self.type}' is not unique")
 
         log.info(f"Initializing datahandler '{self.type}' for '{self.name}'")
 

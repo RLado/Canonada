@@ -1,3 +1,4 @@
+import traceback
 from concurrent.futures import ThreadPoolExecutor
 
 from ..logger import logger as log
@@ -228,29 +229,35 @@ class Pipeline():
             """
             master_key, _ = master
 
-            known_inputs = params.copy()
-            for input_name, datahandler in self.input_datahandlers.items():
-                known_inputs[input_name] = datahandler[master_key]
-                
-            # Execute the nodes in order
-            for node in self.exec_order:
-                # Prepare the inputs for the node
-                node_inputs = [known_inputs[input_name] for input_name in node.input]
-                # Run the node
-                output_data = node.func(*node_inputs)
-                # If the node does not return a tuple, check if a list/tuple is returned and wrap it in a tuple
-                # Check if output_data implements len
-                if not hasattr(output_data, "__len__"):
-                    output_data = (output_data,)
-                if len(output_data) != len(node.output):
-                    if len(node.output) == 1:
+            try:
+                known_inputs = params.copy()
+                for input_name, datahandler in self.input_datahandlers.items():
+                    known_inputs[input_name] = datahandler[master_key]
+                    
+                # Execute the nodes in order
+                for node in self.exec_order:
+                    # Prepare the inputs for the node
+                    node_inputs = [known_inputs[input_name] for input_name in node.input]
+                    # Run the node
+                    output_data = node.func(*node_inputs)
+                    # If the node does not return a tuple, check if a list/tuple is returned and wrap it in a tuple
+                    # Check if output_data implements len
+                    if not hasattr(output_data, "__len__"):
                         output_data = (output_data,)
-                # Update the known inputs
-                known_inputs.update({output: output_data[i] for i, output in enumerate(node.output)})
-                # Check if the output data should be saved
-                for output_name in node.output:
-                    if output_name in self.output_datahandlers:
-                        self.output_datahandlers[output_name].save(known_inputs[output_name])
+                    if len(output_data) != len(node.output):
+                        if len(node.output) == 1:
+                            output_data = (output_data,)
+                    # Update the known inputs
+                    known_inputs.update({output: output_data[i] for i, output in enumerate(node.output)})
+                    # Check if the output data should be saved
+                    for output_name in node.output:
+                        if output_name in self.output_datahandlers:
+                            self.output_datahandlers[output_name].save(known_inputs[output_name])
+                            
+            except Exception as e:
+                log.error(f"Error in pipeline {self.name} with key {master_key}: {e}")
+                log.error(traceback.format_exc())
+                raise e
 
         # Get a key for the first datahandler and use the key to retireve all other input data for the pipeline
         with ThreadPoolExecutor(max_workers=self.max_workers) as mpool:

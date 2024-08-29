@@ -5,18 +5,6 @@ import tomllib
 from ..logger import logger as log
 from ._datahandlers import Datahandler, check_datahandler, available_datahandlers
 
-# Import user defined pipelines
-sys.path.append(os.getcwd())
-try:
-    from datahandlers import available_datahandlers as user_available_datahandlers
-except ImportError as e:
-    log.error(e)
-    log.error("No datahandlers module found in the project directory. Have you initialized a project?")
-    sys.exit(1)
-
-# Add user defined datahandlers to the available datahandlers
-available_datahandlers.update(user_available_datahandlers)
-
 
 def get(dataset_name: str) -> Datahandler:
     """
