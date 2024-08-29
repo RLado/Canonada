@@ -74,7 +74,7 @@ Commands:
 ```
 
 ## Installation
-Canonada is available on PyPI and can be installed using pip:
+Canonada is available on [PyPI](https://pypi.org/project/canonada/) and can be installed using pip:
 ```bash
 pip install canonada
 ```
