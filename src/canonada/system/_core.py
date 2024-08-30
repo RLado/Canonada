@@ -61,6 +61,10 @@ class System():
         """
         log.info(f"Running pipeline system: '{self.name}'")
         for pipeline in self.pipeline:
+            # Recalculate the pipeline execution order to ensure the catalog is up-to-date
+            pipeline._calc_exec_order()
+
+            # Run the pipeline
             pipeline()
 
 
