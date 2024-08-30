@@ -32,7 +32,6 @@ ENV/
 env.bak/
 venv.bak/
 
-# Nodeflow
+# Canonada
 credentials.toml
 data/
-notebooks/
