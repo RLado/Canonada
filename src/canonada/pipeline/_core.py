@@ -142,7 +142,8 @@ class Pipeline():
         for i, node in enumerate(nodes_to_process):
             if len(node.input) == 0:
                 self.exec_order.append(node)
-                known_inputs.add(*node.output)
+                if len(node.output) > 0:
+                    known_inputs.add(*node.output)
                 nodes_idx_processed.append(i)
         
         # Remove the processed nodes from the nodes_to_process list
@@ -158,7 +159,8 @@ class Pipeline():
             for i, node in enumerate(nodes_to_process):
                 if set(node.input).issubset(known_inputs):
                     self.exec_order.append(node)
-                    known_inputs.add(*node.output)
+                    if len(node.output) > 0:
+                        known_inputs.add(*node.output)
                     nodes_idx_processed.append(i)
             
             # Remove the processed nodes from the nodes_to_process list
@@ -216,7 +218,7 @@ class Pipeline():
         params = catalog_params()
         params = {f"params:{key}": value for key, value in params.items()}
 
-        # From the first node in the exec_order, get the first catalogged datasource
+        # From the first node in the exec_order, get the first cataloged datasource
         master_datahandler: str
         for input_src in self.exec_order[0].input:
             if input_src in self.input_datahandlers:
