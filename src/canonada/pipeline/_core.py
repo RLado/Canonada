@@ -22,7 +22,7 @@ class Node():
         """
         return cls.registry
 
-    def __init__(self, name:str, input:list[str], output:list[str], func:callable):
+    def __init__(self, name:str, input:list[str], output:list[str], func:callable) -> None:
         self.name:str = name
         self.input: list = input
         self.output: list = output
@@ -38,7 +38,7 @@ class Node():
         assert len(set(output)) == len(output), "Output list contains duplicates"
         assert callable(self.func), "Function is not callable"
     
-    def __repr__(self):
+    def __repr__(self) -> str:
         """
         Show node name and input/output
         """
@@ -57,7 +57,7 @@ class Pipeline():
         """
         return cls.registry
 
-    def __init__(self, name:str, nodes:list[Node]):
+    def __init__(self, name:str, nodes:list[Node]) -> None:
         self.name:str = name
         self.nodes:list[Node] = nodes
         self.exec_order:list[Node] = []
@@ -78,19 +78,19 @@ class Pipeline():
         # Register the pipeline
         Pipeline.registry.append(self)
     
-    def __repr__(self):
+    def __repr__(self) -> str:
         """
         Show all nodes in the pipeline
         """
         return "\n".join([str(node) for node in self.nodes])
     
-    def __call__(self):
+    def __call__(self) -> None:
         """
         Run the pipeline
         """
         self.run()
 
-    def _calc_exec_order(self):
+    def _calc_exec_order(self) -> None:
         """
         Calculate the execution order of the nodes. Get the necessary datahandlers for input and output.
         """
@@ -208,7 +208,7 @@ class Pipeline():
         
         return known_inputs # Now being the known outputs       
         
-    def run(self):
+    def run(self) -> None:
         """
         Execute the pipeline
         """
@@ -217,6 +217,11 @@ class Pipeline():
         # Read the project parameters
         params = catalog_params()
         params = {f"params:{key}": value for key, value in params.items()}
+
+        # If none of the pipeline inputs are datahandlers, run the pipeline once
+        if len(self.input_datahandlers) == 0:
+            self.run_once({})
+            return
 
         # From the first node in the exec_order, get the first cataloged datasource
         master_datahandler: str
