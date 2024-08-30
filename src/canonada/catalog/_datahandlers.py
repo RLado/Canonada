@@ -32,7 +32,7 @@ class Datahandler():
         if self.type == "":
             raise ValueError("Datahandler name cannot be empty")
 
-        log.info(f"Initializing datahandler '{self.type}' for '{self.name}'")
+        log.debug(f"Initializing datahandler '{self.type}' for '{self.name}'")
 
         # Register the datahandler
         Datahandler.registry.append(self)
