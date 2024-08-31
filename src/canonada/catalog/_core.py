@@ -1,5 +1,4 @@
 import os
-import sys
 import tomllib
 
 from ..logger import logger as log
@@ -16,6 +15,11 @@ def get(dataset_name: str) -> Datahandler:
     Returns:
         Any: The datahandler object.
     """
+
+    # Check if the catalog file exists
+    if not os.path.isfile("config/catalog.toml"):
+        raise FileNotFoundError("Catalog file not found")
+        return
     
     # Read the catalog file
     catalog: dict
@@ -44,6 +48,11 @@ def ls() -> list:
     Returns:
         list: A list of available datasets.
     """
+
+    # Check if the catalog file exists
+    if not os.path.isfile("config/catalog.toml"):
+        raise FileNotFoundError("Catalog file not found")
+        return
     
     # Read the catalog file
     catalog: dict
@@ -60,10 +69,64 @@ def params() -> dict[str, any]:
     Returns:
         dict: A dictionary with the project's parameters.
     """
+
+    # Check if the parameters file exists
+    if not os.path.isfile("config/parameters.toml"):
+        raise FileNotFoundError("Parameters file not found")
+        return
     
     # Read the parameters file
-    catalog: dict
+    params: dict
     with open("config/parameters.toml", "rb") as f:
-        catalog = tomllib.load(f)
+        params = tomllib.load(f)
+    
+    # Flatten dictionary  
+    params = _flatten(params)
 
-    return catalog
+    return params
+
+def credentials() -> dict[str, any]:
+    """
+    Get credentials.
+
+    Returns:
+        dict: A dictionary with the project's credentials.
+    """
+
+    # Check if the credentials file exists
+    if not os.path.isfile("config/credentials.toml"):
+        raise FileNotFoundError("Credentials file not found")
+        return
+    
+    # Read the credentials file
+    cred: dict
+    with open("config/credentials.toml", "rb") as f:
+        cred = tomllib.load(f)
+    
+    # Flatten dictionary  
+    cred = _flatten(cred)
+
+    return cred
+
+def _flatten(d, parent_key='', sep='.') -> dict[str, any]:
+    """
+    Flatten a dictionary. Nested keys are concatenated with a dot.
+
+    Args:
+        d (dict): The dictionary to flatten.
+        parent_key (str): The parent key.
+        sep (str): The separator to use.
+    
+    Returns:
+        dict: The flattened dictionary guaranteed to have only one level of keys.
+    """
+
+    items = []
+    for k, v in d.items():
+        new_key = f"{parent_key}{sep}{k}" if parent_key else k
+        if isinstance(v, dict):
+            items.extend(_flatten(v, new_key, sep=sep).items())
+        else:
+            items.append((new_key, v))
+
+    return dict(items)
