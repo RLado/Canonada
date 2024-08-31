@@ -9,6 +9,7 @@ clean:
 test:
 # Run the tests
 	@python -m unittest
+	@python -m unittest discover -s tests/basic_test_project/tests/ -p "test_*.py"
 
 bump_patch:
 # Increase the patch number

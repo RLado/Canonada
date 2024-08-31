@@ -2,9 +2,11 @@ import os
 import sys
 import unittest
 
-# Import pipelines
-sys.path.append(os.path.join(os.path.dirname(__file__), "basic_test_project"))
+# Change to the test project directory
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+os.chdir(os.path.join(os.path.dirname(__file__), ".."))
 import pipelines.data_generation
+
 
 class TestPipelines(unittest.TestCase):
     """
@@ -19,7 +21,7 @@ class TestPipelines(unittest.TestCase):
         pipelines.data_generation.data_gen()
 
         # Check if the data was generated
-        self.assertTrue(os.path.isdir("data/raw_signals"))
+        self.assertTrue(os.path.isdir("data/raw_signals"), "Data was not generated")
 
 
 if __name__ == '__main__':
