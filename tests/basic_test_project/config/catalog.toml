@@ -1,0 +1,4 @@
+[raw_signals]
+type="canonada.json_multi"
+keys=[]
+path="data/raw_signals"

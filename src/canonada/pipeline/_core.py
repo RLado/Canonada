@@ -152,8 +152,8 @@ class Pipeline():
         
         # Process the rest of the nodes
         max_iter = len(self.nodes)
-        i = 0
-        while len(nodes_to_process) > 0:            
+        iter_count = 0
+        while len(nodes_to_process) > 0:  
             nodes_idx_processed = []
             # Get all nodes with exclusively known inputs
             for i, node in enumerate(nodes_to_process):
@@ -163,13 +163,18 @@ class Pipeline():
                         known_inputs.add(*node.output)
                     nodes_idx_processed.append(i)
             
+            # If no nodes were processed, the pipeline does not have enough inputs to run
+            if len(nodes_idx_processed) == 0:
+                raise ValueError("Pipeline does not have enough inputs to run completely. Make sure all parameters are defined.")
+                break
+
             # Remove the processed nodes from the nodes_to_process list
             for idx in sorted(nodes_idx_processed, reverse=True):
                 nodes_to_process.pop(idx)
             
             # Increment the iteration counter (avoid infinite loop)
-            i += 1
-            if i > max_iter:
+            iter_count += 1
+            if iter_count > max_iter:
                 raise ValueError("Pipeline contains a cycle")
                 break
     
