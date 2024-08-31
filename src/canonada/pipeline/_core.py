@@ -72,9 +72,6 @@ class Pipeline():
         if self.name in [pipe.name for pipe in Pipeline.registry]:
             raise ValueError(f"Pipeline name '{self.name}' is not unique")
 
-        # Calculate the execution order & get datahandlers
-        self._calc_exec_order()
-
         # Register the pipeline
         Pipeline.registry.append(self)
     
@@ -95,6 +92,11 @@ class Pipeline():
         Calculate the execution order of the nodes. Get the necessary datahandlers for input and output.
         """
         log.debug("Calculating pipeline execution order")
+
+        # Reset the execution order (avoid duplicates)
+        self.exec_order = []
+        self.input_datahandlers = {}
+        self.output_datahandlers = {}
 
         # Check that no outputs are repeated
         outputs: set = set()
@@ -188,6 +190,10 @@ class Pipeline():
         Returns:
             dict[str, any]: A dictionary with the known outputs.
         """
+
+        # Calculate the execution order & get datahandlers
+        self._calc_exec_order()
+
         # Read the project parameters
         params = catalog_params()
 
@@ -217,6 +223,10 @@ class Pipeline():
         """
         Execute the pipeline
         """
+        
+        # Calculate the execution order & get datahandlers
+        self._calc_exec_order()
+        
         log.info(f"Running pipeline: {self.name}")
 
         # Read the project parameters
@@ -226,6 +236,7 @@ class Pipeline():
         # If none of the pipeline inputs are datahandlers, run the pipeline once
         if len(self.input_datahandlers) == 0:
             self.run_once({})
+            log.info(f"Pipeline {self.name} finished")
             return
 
         # From the first node in the exec_order, get the first cataloged datasource

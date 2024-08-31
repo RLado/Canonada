@@ -1,3 +1,6 @@
 [sig_gen]
 num_signals=200
 num_samples=1000
+
+[offset_signal]
+random_seed=42

@@ -43,7 +43,7 @@ class TestCatalog(unittest.TestCase):
         params = catalog.params()
 
         # Verify results
-        expected_params = {"sig_gen.num_signals": 200, "sig_gen.num_samples": 1000}
+        expected_params = {"sig_gen.num_signals": 200, "sig_gen.num_samples": 1000, "offset_signal.random_seed": 42}
         self.assertEqual(params, expected_params)
 
     def test_credentials(self):
@@ -72,7 +72,7 @@ class TestCatalog(unittest.TestCase):
         datasets = catalog.ls()
 
         # Verify results
-        expected_datasets = ["raw_signals"]
+        expected_datasets = ["raw_signals", "offset_signals"]
         self.assertEqual(datasets, expected_datasets)
 
 
