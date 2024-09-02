@@ -17,8 +17,9 @@ class System():
         """
         return cls.registry
 
-    def __init__(self, name:str, pipelines:list[Pipeline]):
+    def __init__(self, name:str, pipelines:list[Pipeline], description:str=""):
         self.name:str = name
+        self.description:str = description
         self.pipeline:list[Pipeline] = pipelines
 
         # Check that the system name is unique and not empty
@@ -36,10 +37,15 @@ class System():
         """
 
         repr_buffer = io.StringIO()
+
+        repr_buffer.write(f"------ System: {self.name} ------\n")
+        if self.description != "":
+            repr_buffer.write(f"Description: {self.description}\n")
+            repr_buffer.write("---------------------------------\n")
+        repr_buffer.write("\n")
+
         for pipe in self.pipeline:
-            repr_buffer.write(f"----- Pipeline: {pipe.name} -----\n")
             repr_buffer.write(f"{pipe}\n")
-            repr_buffer.write("\n")
 
         return repr_buffer.getvalue()
 

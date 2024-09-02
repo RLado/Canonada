@@ -1,3 +1,4 @@
+import io
 import traceback
 from concurrent.futures import ThreadPoolExecutor
 
@@ -22,8 +23,9 @@ class Node():
         """
         return cls.registry
 
-    def __init__(self, name:str, input:list[str], output:list[str], func:callable) -> None:
+    def __init__(self, name:str, input:list[str], output:list[str], func:callable, description:str="") -> None:
         self.name:str = name
+        self.description:str = description
         self.input: list = input
         self.output: list = output
         self.func:func = func
@@ -42,7 +44,12 @@ class Node():
         """
         Show node name and input/output
         """
-        return f"Node: {self.name} | Input: {self.input} | Output: {self.output}"
+        repr_buffer = io.StringIO()
+        repr_buffer.write(f"Node: {self.name}\n\tinput: {self.input}\n\toutput: {self.output}")
+        if self.description != "":
+            repr_buffer.write(f"\n\tdescription: {self.description}")
+
+        return repr_buffer.getvalue()
     
 class Pipeline():
     """
@@ -57,8 +64,9 @@ class Pipeline():
         """
         return cls.registry
 
-    def __init__(self, name:str, nodes:list[Node]) -> None:
+    def __init__(self, name:str, nodes:list[Node], description:str="") -> None:
         self.name:str = name
+        self.description:str = description
         self.nodes:list[Node] = nodes
         self.exec_order:list[Node] = []
         self.input_datahandlers:dict[str, Datahandler] = {}
@@ -79,7 +87,18 @@ class Pipeline():
         """
         Show all nodes in the pipeline
         """
-        return "\n".join([str(node) for node in self.nodes])
+
+        repr_buffer = io.StringIO()
+
+        repr_buffer.write(f"----- Pipeline: {self.name} -----\n")
+        if self.description != "":
+            repr_buffer.write(f"Description: {self.description}\n")
+            repr_buffer.write("---------------------------------\n\n")
+
+        repr_buffer.write("\n".join([str(node) for node in self.nodes]))
+        repr_buffer.write("\n")
+
+        return repr_buffer.getvalue()
     
     def __call__(self) -> None:
         """

@@ -45,6 +45,13 @@ if len(sys.argv) > 1 and sys.argv[1] != "new":
 # Reset the log level
 log.setLevel(config['logging']['level'])
 
+# Format for the CLI
+class Format:
+   BOLD = '\033[1m'
+   END = '\033[0m'
+   UNDERLINE = '\033[4m'
+
+# Main CLI function
 def main():
     args = sys.argv
     if len(args) < 2:
@@ -93,12 +100,24 @@ def main():
                 case "pipelines":
                     # List all available pipelines
                     for pipeline in Pipeline.registry:
-                        print(pipeline.name)
+                        if pipeline.description != "":
+                            if len(pipeline.description.splitlines()) > 1:
+                                print(f"{Format.BOLD}{pipeline.name}{Format.END}: {pipeline.description.splitlines()[0]} [...]")
+                            else:
+                                print(f"{Format.BOLD}{pipeline.name}{Format.END}: {pipeline.description.splitlines()[0]}")
+                        else:
+                            print(pipeline.name)
 
                 case "systems":
                     # List all available systems
                     for system in System.registry:
-                        print(system.name)
+                        if system.description != "":
+                            if len(system.description.splitlines()) > 1:
+                                print(f"{Format.BOLD}{system.name}{Format.END}: {system.description.splitlines()[0]} [...]")
+                            else:
+                                print(f"{Format.BOLD}{system.name}{Format.END}: {system.description.splitlines()[0]}")
+                        else:
+                            print(system.name)
 
                 case _:
                     log.error("Command not recognized. Options are 'pipelines' and 'systems'")
