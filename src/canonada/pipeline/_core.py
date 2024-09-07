@@ -164,7 +164,7 @@ class Pipeline():
             if len(node.input) == 0:
                 self.exec_order.append(node)
                 if len(node.output) > 0:
-                    known_inputs.add(*node.output)
+                    known_inputs.update(node.output)
                 nodes_idx_processed.append(i)
         
         # Remove the processed nodes from the nodes_to_process list
@@ -181,7 +181,7 @@ class Pipeline():
                 if set(node.input).issubset(known_inputs):
                     self.exec_order.append(node)
                     if len(node.output) > 0:
-                        known_inputs.add(*node.output)
+                        known_inputs.update(node.output)
                     nodes_idx_processed.append(i)
             
             # If no nodes were processed, the pipeline does not have enough inputs to run
