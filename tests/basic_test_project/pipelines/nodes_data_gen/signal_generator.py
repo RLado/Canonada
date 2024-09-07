@@ -20,6 +20,12 @@ def gen(num_signals: int, sig_len: int):
         for file in os.listdir("data/offset_signals"):
             os.remove(os.path.join("data/offset_signals", file))
     
+    if not os.path.exists("data/substracted_signals"):
+        os.makedirs("data/substracted_signals")
+    else:
+        for file in os.listdir("data/substracted_signals"):
+            os.remove(os.path.join("data/substracted_signals", file))
+
     if not os.path.exists("data/split_signals1"):
         os.makedirs("data/split_signals1")
     else:
