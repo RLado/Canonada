@@ -35,7 +35,7 @@ offset_pipe = Pipeline("offset_pipe", [
     Node(
         func=test_nodes.substract_signals, 
         input=["signal1", "signal2"], 
-        output=["substracted_signal"], 
+        output=["substracted_signals"], 
         name="substract_signals"
         ),
     Node(

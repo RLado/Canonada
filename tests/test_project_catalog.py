@@ -72,7 +72,7 @@ class TestCatalog(unittest.TestCase):
         datasets = catalog.ls()
 
         # Verify results
-        expected_datasets = ["raw_signals", "offset_signals"]
+        expected_datasets = ["raw_signals", "offset_signals", "substracted_signals", "split_signals1", "split_signals2"]
         self.assertEqual(datasets, expected_datasets)
 
 

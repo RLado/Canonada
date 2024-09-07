@@ -26,6 +26,7 @@ class TestPipelines(unittest.TestCase):
         # Check if the data was generated
         self.assertTrue(os.path.isdir("data/raw_signals"), "Data was not generated")
         self.assertTrue(os.path.isdir("data/offset_signals"), "Offsets were not generated")
+        self.assertTrue(os.path.isdir("data/substracted_signals"), "Substracted signals were not generated")
         self.assertTrue(os.path.isdir("data/split_signals1"), "Split signals 1 were not generated")
         self.assertTrue(os.path.isdir("data/split_signals2"), "Split signals 2 were not generated")
 
@@ -33,6 +34,10 @@ class TestPipelines(unittest.TestCase):
         raw_signals = os.listdir("data/raw_signals")
         offset_signals = os.listdir("data/offset_signals")
         self.assertEqual(len(raw_signals), len(offset_signals), "Raw signals and offsets have different number of files")
+
+        # Assert that both raw_signals and substracted_signals have the same number of files
+        substracted_signals = os.listdir("data/substracted_signals")
+        self.assertEqual(len(raw_signals), len(substracted_signals), "Raw signals and substracted signals have different number of files")
 
         # Assert that split_signals1 and split_signals2 have the same number of files
         split_signals1 = os.listdir("data/split_signals1")
@@ -45,6 +50,7 @@ class TestPipelines(unittest.TestCase):
         # Clean up
         os.system("rm -rf data/raw_signals")
         os.system("rm -rf data/offset_signals")
+        os.system("rm -rf data/substracted_signals")
         os.system("rm -rf data/split_signals1")
         os.system("rm -rf data/split_signals2")
 
@@ -63,6 +69,7 @@ class TestSystems(unittest.TestCase):
         # Check if the data was generated
         self.assertTrue(os.path.isdir("data/raw_signals"), "Data was not generated")
         self.assertTrue(os.path.isdir("data/offset_signals"), "Offsets were not generated")
+        self.assertTrue(os.path.isdir("data/substracted_signals"), "Substracted signals were not generated")
         self.assertTrue(os.path.isdir("data/split_signals1"), "Split signals 1 were not generated")
         self.assertTrue(os.path.isdir("data/split_signals2"), "Split signals 2 were not generated")
 
@@ -70,6 +77,10 @@ class TestSystems(unittest.TestCase):
         raw_signals = os.listdir("data/raw_signals")
         offset_signals = os.listdir("data/offset_signals")
         self.assertEqual(len(raw_signals), len(offset_signals), "Raw signals and offsets have different number of files")
+
+        # Assert that both raw_signals and substracted_signals have the same number of files
+        substracted_signals = os.listdir("data/substracted_signals")
+        self.assertEqual(len(raw_signals), len(substracted_signals), "Raw signals and substracted signals have different number of files")
 
         # Assert that split_signals1 and split_signals2 have the same number of files
         split_signals1 = os.listdir("data/split_signals1")
@@ -82,6 +93,7 @@ class TestSystems(unittest.TestCase):
         # Clean up
         os.system("rm -rf data/raw_signals")
         os.system("rm -rf data/offset_signals")
+        os.system("rm -rf data/substracted_signals")
         os.system("rm -rf data/split_signals1")
         os.system("rm -rf data/split_signals2")
 
