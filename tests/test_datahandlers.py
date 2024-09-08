@@ -11,8 +11,15 @@ class TestCSVDatahandlers(unittest.TestCase):
     Test built in CSV datahandlers
     """
 
-    # Change directory to the test directory
-    os.chdir("tests")
+    def setUp(self):
+        # Save the current directory
+        self.original_directory = os.getcwd()
+        # Change directory to the test directory
+        os.chdir("tests")
+
+    def tearDown(self):
+        # Change back to the original directory
+        os.chdir(self.original_directory)
 
     def test_csv_rows_no_keys(self):
         """

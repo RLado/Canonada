@@ -11,8 +11,15 @@ class TestCatalog(unittest.TestCase):
     Test catalog functions
     """
 
-    # Change to the test project directory
-    os.chdir("tests/basic_test_project")
+    def setUp(self):
+        # Save the current directory
+        self.original_directory = os.getcwd()
+        # Change to the test project directory
+        os.chdir("tests/basic_test_project")
+
+    def tearDown(self):
+        # Change back to the original directory
+        os.chdir(self.original_directory)
 
     def test_flatten(self):
         """
