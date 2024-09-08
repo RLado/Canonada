@@ -34,3 +34,6 @@ venv.bak/
 
 # IDEs
 .vscode/
+
+# Tests
+.coverage

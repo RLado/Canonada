@@ -8,8 +8,12 @@ clean:
 
 test:
 # Run the tests
-	@python -m unittest
-	@python -m unittest discover -s tests/basic_test_project/tests/ -p "test_*.py"
+	@python -m coverage run -m unittest
+	@python -m coverage run -m unittest discover -s tests/basic_test_project/tests/ -p "test_*.py"
+
+coverage: test
+# Show test coverage report
+	@python -m coverage report -m
 
 bump_patch:
 # Increase the patch number
