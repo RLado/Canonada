@@ -1,3 +1,4 @@
+import csv
 import json
 import os
 import uuid
@@ -202,8 +203,75 @@ class JsonMulti(Datahandler):
 
         with open(os.path.join(self.path, f"{kwargs['filename']}.json"), "w") as f:
             json.dump(kwargs["data"], f)
+
+class CSVRows(Datahandler):
+    """
+    Loads and indexes a CSV file by rows. The first row is considered the header.
+    """
+    
+    def __init__(self, name: str, keys: set, kwargs: dict):
+        super().__init__(name, "canonada.csv_rows", keys, kwargs)
+        if "path" not in kwargs:
+            raise ValueError("No path provided for csv_datahandler.")
+        self.path = kwargs["path"]
+
+        # Load the headers
+        if "headers" in kwargs:
+            self.headers = kwargs["headers"]
+        else:
+            self.headers = []
+
+        # Check if the file exists
+        if not os.path.isfile(self.path):
+            log.warning(f"File {self.path} not found for csv_rows datahandler. Creating an empty file.")
+            if len(self.headers) == 0:
+                log.warning("No headers provided for csv_rows datahandler. Creating an empty file.")
+            with open(self.path, 'w') as f:
+                f.write(",".join(self.headers))
+                f.write("\n")
+            return
         
+        # Load the data and create the index
+        data = self._load(self.path)
+
+        # Create an index with the given keys or with row index
+        if len(keys) == 0:
+            self.index = data
+        else:
+            for row in data.values():
+                key = tuple(row[k] for k in keys)
+                if key in self.index:
+                    log.warning(f"Key {key} is not unique. Dropping row.")
+                    continue
+                self.index[key] = row
+
+    def __len__(self):
+        return len(self.index)
+    
+    def __iter__(self):
+        for key, row in self.index.items():
+            yield key, row
+    
+    def __getitem__(self, key):
+        return self.index[key]
+    
+    def _load(self, file) -> dict:
+        with open(file, 'r') as f:
+            reader = csv.DictReader(f, skipinitialspace=True)
+            self.header = reader.fieldnames
+            return {i: row for i, row in enumerate(reader)}
+    
+    def save(self, kwargs: dict) -> None:
+        if "path" not in self.kwargs:
+            raise ValueError("No path provided for csv_rows.")
+
+        with open(self.kwargs["path"], 'a') as f:
+            writer = csv.DictWriter(f, fieldnames=self.headers)
+            writer.writerow(kwargs)
+
+
 # Register of all built in datasets
 available_datahandlers = {
-    "canonada.json_multi": JsonMulti
+    "canonada.json_multi": JsonMulti,
+    "canonada.csv_rows": CSVRows,
 }
