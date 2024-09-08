@@ -17,6 +17,7 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Information Analysis",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
+dependencies = []
 
 [project.optional-dependencies]
 
