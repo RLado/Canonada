@@ -136,12 +136,16 @@ class Pipeline():
         if len(catalog_outputs.intersection(params)) > 0:
             raise ValueError(f"Output to a node cannot be a parameter: {catalog_outputs.intersection(params)}")
 
-        # List all known inputs
+        # Check that no outputs can be known inputs
         known_inputs: set = set()
         for node in self.nodes:
             for input in node.input:
                 if input in catalog_ls():
                     known_inputs.add(input)
+        
+        for known_input in known_inputs:
+            if known_input in outputs:
+                raise ValueError(f"Output '{known_input}' is also an input. This is not allowed.")
 
         # Get the necessary datahandlers for input and output
         for input in known_inputs:
