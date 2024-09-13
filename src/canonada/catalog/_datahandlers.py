@@ -137,6 +137,12 @@ class JsonMulti(Datahandler):
             raise ValueError("No path provided for json_multi datahandler.")
         self.path = kwargs["path"]
 
+        # Check if the path exists, if not, create it
+        if not os.path.isdir(self.path):
+            log.warning(f"Path '{self.path}' not found for json_multi datahandler. Creating it.")
+            os.makedirs(self.path)
+            return # No need to load data if the path is empty
+
         # List all files
         files: list[Path] = [p for p in Path( self.path ).rglob('*.json')]
 
