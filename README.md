@@ -79,16 +79,10 @@ Canonada is available on [PyPI](https://pypi.org/project/canonada/) and can be i
 pip install canonada
 ```
 
-## Getting Started
-Create a new project:
-```bash
-canonada new my_project
-```
-
-Guide coming soon...
+> Check out the [Getting Started](https://github.com/RLado/Canonada/wiki/GettingStarted) guide to learn how to create a new project with Canonada.
 
 ## Documentation
-Coming soon...
+Check out the project's documentation [here](https://github.com/RLado/Canonada/wiki)
 
 ## Contributing
 Coming soon...
