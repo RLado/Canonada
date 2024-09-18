@@ -24,6 +24,17 @@ class Node():
         return cls.registry
 
     def __init__(self, name:str, input:list[str], output:list[str], func:callable, description:str="") -> None:
+        """
+        Instanciate a new node.
+
+        Args:
+            name (str): The name of the node.
+            input (list[str]): The list of input arguments to the node given as strings.
+            output (list[str]): The list of output arguments to the node given as strings.
+            func (callable): The function to be executed by the node.
+            description (str, optional): A description of the node. Defaults to "".
+        """
+        
         self.name:str = name
         self.description:str = description
         self.input: list = input
@@ -65,6 +76,15 @@ class Pipeline():
         return cls.registry
 
     def __init__(self, name:str, nodes:list[Node], description:str="") -> None:
+        """
+        Instanciate a new pipeline.
+
+        Args:
+            name (str): The name of the pipeline. This name will be used to call the pipeline from the command line. The name must be unique.
+            nodes (list[Node]): The list of nodes in the pipeline.
+            description (str, optional): A description of the pipeline. Defaults to "".
+        """
+
         self.name:str = name
         self.description:str = description
         self.nodes:list[Node] = nodes

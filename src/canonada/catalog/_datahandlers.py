@@ -23,6 +23,16 @@ class Datahandler():
         return cls.registry
 
     def __init__(self, name: str, dh_type: str, keys: list, kwargs: dict):
+        """
+        Instantiate a new datahandler.
+
+        Args:
+            name (str): The name of the datahandler.
+            dh_type (str): The type of the datahandler. This is used to identify the datahandler implementation in the catalog.
+            keys (list): A list of keys to build an index with.
+            kwargs (dict): A dictionary of keyword arguments to be used by the datahandler.
+        """
+
         self.name = name
         self.type = dh_type
         self.keys = keys
@@ -132,6 +142,16 @@ class JsonMulti(Datahandler):
     """
 
     def __init__(self, name: str, keys: set, kwargs: dict):
+        """
+        Instanciate a new canonada.json_multi datahandler.
+
+        Args:
+            name (str): The name of the datahandler. Used to identify the datahandler in the catalog.
+            keys (set): A set of keys to build the index with.
+            kwargs (dict): A dictionary of keyword arguments to be used by the datahandler. Required arguments:
+                - path (str): The path to the dataset.
+        """
+
         super().__init__(name, "canonada.json_multi", keys, kwargs)
         if "path" not in kwargs:
             raise ValueError("No path provided for json_multi datahandler.")
@@ -216,6 +236,17 @@ class CSVRows(Datahandler):
     """
     
     def __init__(self, name: str, keys: set, kwargs: dict):
+        """
+        Instanciate a new canonada.csv_rows datahandler.
+
+        Args:
+            name (str): The name of the datahandler. Used to identify the datahandler in the catalog.
+            keys (set): A set of keys to build the index with.
+            kwargs (dict): A dictionary of keyword arguments to be used by the datahandler. Required arguments:
+                - path (str): The path to the dataset file.
+                - headers (list, optional): A list of headers for the dataset. Recommended if the file is expected to be empty.
+        """
+
         super().__init__(name, "canonada.csv_rows", keys, kwargs)
         if "path" not in kwargs:
             raise ValueError("No path provided for csv_datahandler.")
@@ -268,6 +299,13 @@ class CSVRows(Datahandler):
             return {i: row for i, row in enumerate(reader)}
     
     def save(self, kwargs: dict) -> None:
+        """
+        Save data the dataset file.
+
+        Args:
+            kwargs (dict): The data to save. The keys must match the headers.
+        """
+
         if "path" not in self.kwargs:
             raise ValueError("No path provided for csv_rows.")
 

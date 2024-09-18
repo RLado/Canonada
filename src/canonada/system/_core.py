@@ -18,6 +18,15 @@ class System():
         return cls.registry
 
     def __init__(self, name:str, pipelines:list[Pipeline], description:str=""):
+        """
+        Instantiate a new pipeline system.
+
+        Args:
+            name (str): The name of the system.
+            pipelines (list[Pipeline]): A list of pipelines to be run sequentially (order matters).
+            description (str, optional): A description of the system. Defaults to "".
+        """
+
         self.name:str = name
         self.description:str = description
         self.pipeline:list[Pipeline] = pipelines
