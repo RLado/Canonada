@@ -143,7 +143,7 @@ class JsonMulti(Datahandler):
 
     def __init__(self, name: str, keys: set, kwargs: dict):
         """
-        Instanciate a new canonada.json_multi datahandler.
+        Instantiate a new canonada.json_multi datahandler.
 
         Args:
             name (str): The name of the datahandler. Used to identify the datahandler in the catalog.
@@ -237,7 +237,7 @@ class CSVRows(Datahandler):
     
     def __init__(self, name: str, keys: set, kwargs: dict):
         """
-        Instanciate a new canonada.csv_rows datahandler.
+        Instantiate a new canonada.csv_rows datahandler.
 
         Args:
             name (str): The name of the datahandler. Used to identify the datahandler in the catalog.
