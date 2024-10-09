@@ -85,4 +85,4 @@ pip install canonada
 Check out the project's documentation [here](https://github.com/RLado/Canonada/wiki)
 
 ## Contributing
-Coming soon...
+Contributions are welcome! If you have any suggestions, examples, datahandlers, bug reports, or feature requests, please open an issue or a discussion thread.
