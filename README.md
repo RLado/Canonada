@@ -3,9 +3,9 @@
 
 Canonada is a data science framework that helps you build production-ready streaming pipelines for data processing in Python.
 
-![GitHub branch check runs](https://img.shields.io/github/check-runs/rlado/canonada/master)
-![PyPI - Version](https://img.shields.io/pypi/v/canonada)
-![PyPI - Downloads](https://img.shields.io/pypi/dm/canonada)
+[![GitHub branch check runs](https://img.shields.io/github/check-runs/rlado/canonada/master)](https://github.com/RLado/Canonada)
+[![PyPI - Version](https://img.shields.io/pypi/v/canonada)](https://pypi.org/project/canonada/)
+[![PyPI - Downloads](https://img.shields.io/pypi/dm/canonada)](https://pypi.org/project/canonada/)
 
 ## Why Canonada?
 - **Standardized**: Canonada provides a standardized way to build your data projects
