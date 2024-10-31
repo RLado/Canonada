@@ -1,5 +1,5 @@
 ## Canonada
-> ⚠️ Canonada is currently under development and is not ready for production use. 
+> ⚠️ Canonada is currently under development. 
 
 Canonada is a data science framework that helps you build production-ready streaming pipelines for data processing in Python.
 
