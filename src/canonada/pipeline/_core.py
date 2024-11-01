@@ -206,7 +206,9 @@ class Pipeline():
             
             # If no nodes were processed, the pipeline does not have enough inputs to run
             if len(nodes_idx_processed) == 0:
-                raise ValueError("Pipeline does not have enough inputs to run completely. Make sure all parameters are defined.")
+                nodes_string = "\n\t".join([str(node) for node in nodes_to_process])
+                raise ValueError("Pipeline does not have enough inputs to run completely. Make sure all parameters are defined."
+                                 f"\n -- Nodes left to be processed: \n{nodes_string}")                  
                 break
 
             # Remove the processed nodes from the nodes_to_process list
