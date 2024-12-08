@@ -3,6 +3,8 @@ import json
 import os
 import uuid
 from pathlib import Path
+import time
+import fcntl
 from ..logger import logger as log
 
 
@@ -203,7 +205,11 @@ class JsonMulti(Datahandler):
         """
 
         with open(file, "r") as f:
-            return json.load(f)
+            try:
+                return json.load(f)
+            except json.JSONDecodeError as e:
+                log.error(f"Error loading file '{file}': {e}")
+                return {}
 
     def save(self, kwargs:dict) -> None:
         """
@@ -310,8 +316,17 @@ class CSVRows(Datahandler):
             raise ValueError("No path provided for csv_rows.")
 
         with open(self.kwargs["path"], 'a') as f:
+            while True:
+                try:
+                    fcntl.flock(f, fcntl.LOCK_EX | fcntl.LOCK_NB)  # Try to acquire a lock
+                    break  # Lock acquired
+                except BlockingIOError:
+                    time.sleep(0.1)  # Wait if the file is already open
+                    log.debug("Waiting for file lock")
+
             writer = csv.DictWriter(f, fieldnames=self.headers)
             writer.writerow(kwargs)
+            fcntl.flock(f, fcntl.LOCK_UN)  # Release the lock
 
 
 # Register of all built in datasets

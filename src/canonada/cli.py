@@ -194,10 +194,6 @@ def main():
                     print_usage()
                     raise ValueError("Command not recognized")
 
-        case "docs":
-            # Generate and serve documentation
-            log.info("Generating and serving documentation (under development)")
-
         case "version":
             # Print the version of the package
             print(f"Canonada version: {__version__}")
@@ -280,7 +276,6 @@ Commands:
     registry [pipelines/systems] - List all available pipelines or systems
     run [pipelines/systems] <name(s)> - Run a pipeline or system
     view [pipelines/systems] <name(s)> - View a pipeline or system
-    docs - Generate and serve documentation [not implemented]
     version - Print the version of Canonada
     
 """)

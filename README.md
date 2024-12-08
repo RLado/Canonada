@@ -72,7 +72,6 @@ Commands:
     registry [pipelines/systems] - List all available pipelines or systems
     run [pipelines/systems] <name(s)> - Run a pipeline or system
     view [pipelines/systems] <name(s)> - View a pipeline or system
-    docs - Generate and serve documentation [not implemented]
     version - Print the version of Canonada
 ```
 

@@ -39,7 +39,7 @@ class Node():
         self.description:str = description
         self.input: list = input
         self.output: list = output
-        self.func:func = func
+        self.func: callable = func
 
         # Check that the node name is unique and not empty
         if self.name == "":
@@ -286,9 +286,15 @@ class Pipeline():
                 master_datahandler = input_src
                 break
 
-        def run_pass(master: dict[str, Datahandler]):
+        def run_pass(master: tuple[tuple, any]):
             """
             Run a single pass of the pipeline
+
+            Args:
+                master (tuple[tuple, any]): A tuple with the master key and the master data
+
+            Returns:
+                None
             """
             master_key, _ = master
 
@@ -321,7 +327,7 @@ class Pipeline():
                 log.error(traceback.format_exc())
                 raise e
 
-        # Get a key for the first datahandler and use the key to retireve all other input data for the pipeline
+        # Get a key for the first datahandler and use the key to retrieve all other input data for the pipeline
         with ThreadPoolExecutor(max_workers=self.max_workers) as mpool:
             mpool.map(run_pass, self.input_datahandlers[master_datahandler])            
         
