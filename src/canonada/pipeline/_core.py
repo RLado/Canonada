@@ -1,6 +1,6 @@
 import io
 import traceback
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from ..logger import logger as log
 from ..catalog import ls as catalog_ls
@@ -329,6 +329,8 @@ class Pipeline():
 
         # Get a key for the first datahandler and use the key to retrieve all other input data for the pipeline
         with ThreadPoolExecutor(max_workers=self.max_workers) as mpool:
-            mpool.map(run_pass, self.input_datahandlers[master_datahandler])            
-        
+            jobs = [mpool.submit(run_pass, mkey) for mkey in self.input_datahandlers[master_datahandler]]
+            for future in as_completed(jobs): # Free up completed futures       
+                del future
+
         log.info(f"Pipeline {self.name} finished")
