@@ -354,7 +354,7 @@ class Pipeline():
             for _ in range(self.max_workers):
                 try:
                     mkey = next(mkey_iter)
-                    thread = threading.Thread(target=run_pass, args=(mkey))
+                    thread = threading.Thread(target=run_pass, args=(mkey,))
                     thread.start()
                     thread_pool.append(thread)
                 except StopIteration:
@@ -367,7 +367,7 @@ class Pipeline():
                         thread_pool.remove(thread)
                         try:
                             mkey = next(mkey_iter)
-                            thread = threading.Thread(target=run_pass, args=(mkey))
+                            thread = threading.Thread(target=run_pass, args=(mkey,))
                             thread.start()
                             thread_pool.append(thread)
                         except StopIteration:
@@ -382,7 +382,7 @@ class Pipeline():
             for _ in range(self.max_workers):
                 try:
                     mkey = next(mkey_iter)
-                    process = multiprocessing.Process(target=run_pass, args=(mkey))
+                    process = multiprocessing.Process(target=run_pass, args=(mkey,))
                     process.start()
                     process_pool.append(process)
                 except StopIteration:
@@ -395,7 +395,7 @@ class Pipeline():
                         process_pool.remove(process)
                         try:
                             mkey = next(mkey_iter)
-                            process = multiprocessing.Process(target=run_pass, args=(mkey))
+                            process = multiprocessing.Process(target=run_pass, args=(mkey,))
                             process.start()
                             process_pool.append(process)
                         except StopIteration:
