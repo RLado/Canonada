@@ -1,6 +1,7 @@
 import io
 import traceback
-from concurrent.futures import ThreadPoolExecutor, as_completed
+import threading
+import multiprocessing
 
 from ..logger import logger as log
 from ..catalog import ls as catalog_ls
@@ -75,7 +76,7 @@ class Pipeline():
         """
         return cls.registry
 
-    def __init__(self, name:str, nodes:list[Node], description:str="") -> None:
+    def __init__(self, name:str, nodes:list[Node], description:str="", max_workers:int|None=None, multiprocessing:bool=True) -> None:
         """
         Instanciate a new pipeline.
 
@@ -83,15 +84,18 @@ class Pipeline():
             name (str): The name of the pipeline. This name will be used to call the pipeline from the command line. The name must be unique.
             nodes (list[Node]): The list of nodes in the pipeline.
             description (str, optional): A description of the pipeline. Defaults to "".
+            max_workers (int, optional): The maximum number of workers to use. Defaults to None (uses all available cores).
+            multiprocessing (bool, optional): Whether to use multiprocessing. Defaults to True.
         """
 
         self.name:str = name
         self.description:str = description
         self.nodes:list[Node] = nodes
-        self.exec_order:list[Node] = []
-        self.input_datahandlers:dict[str, Datahandler] = {}
-        self.output_datahandlers:dict[str, Datahandler] = {}
-        self.max_workers: int = None
+        self.max_workers: int = max_workers
+        self.multiprocessing: bool = multiprocessing
+        self._exec_order:list[Node] = []
+        self._input_datahandlers:dict[str, Datahandler] = {}
+        self._output_datahandlers:dict[str, Datahandler] = {}
 
         # Check that the pipeline name is unique and not empty
         if self.name == "":
@@ -133,9 +137,9 @@ class Pipeline():
         log.debug("Calculating pipeline execution order")
 
         # Reset the execution order (avoid duplicates)
-        self.exec_order = []
-        self.input_datahandlers = {}
-        self.output_datahandlers = {}
+        self._exec_order = []
+        self._input_datahandlers = {}
+        self._output_datahandlers = {}
 
         # Check that no outputs are repeated
         outputs: set = set()
@@ -169,9 +173,9 @@ class Pipeline():
 
         # Get the necessary datahandlers for input and output
         for input in known_inputs:
-            self.input_datahandlers[input] = catalog_get(input)
+            self._input_datahandlers[input] = catalog_get(input)
         for output in catalog_outputs:
-            self.output_datahandlers[output] = catalog_get(output)
+            self._output_datahandlers[output] = catalog_get(output)
         
         # Add the parameters to the known inputs to calculate the execution order
         known_inputs.update(params)
@@ -182,7 +186,7 @@ class Pipeline():
         # Start with the nodes that have no inputs until there are none left
         for i, node in enumerate(nodes_to_process):
             if len(node.input) == 0:
-                self.exec_order.append(node)
+                self._exec_order.append(node)
                 if len(node.output) > 0:
                     known_inputs.update(node.output)
                 nodes_idx_processed.append(i)
@@ -199,7 +203,7 @@ class Pipeline():
             # Get all nodes with exclusively known inputs
             for i, node in enumerate(nodes_to_process):
                 if set(node.input).issubset(known_inputs):
-                    self.exec_order.append(node)
+                    self._exec_order.append(node)
                     if len(node.output) > 0:
                         known_inputs.update(node.output)
                     nodes_idx_processed.append(i)
@@ -242,7 +246,7 @@ class Pipeline():
         known_inputs.update({f"params:{key}": value for key, value in params.items()})
 
         # Execute the nodes in order
-        for node in self.exec_order:
+        for node in self._exec_order:
             log.debug(f"Running node: {node.name} for inputs: {known_inputs.keys()}")
             # Prepare the inputs for the node
             node_inputs = [known_inputs[input_name] for input_name in node.input]
@@ -274,18 +278,19 @@ class Pipeline():
         params = {f"params:{key}": value for key, value in params.items()}
 
         # If none of the pipeline inputs are datahandlers, run the pipeline once
-        if len(self.input_datahandlers) == 0:
+        if len(self._input_datahandlers) == 0:
             self.run_once({})
             log.info(f"Pipeline {self.name} finished")
             return
 
         # From the first node in the exec_order, get the first cataloged datasource
         master_datahandler: str
-        for input_src in self.exec_order[0].input:
-            if input_src in self.input_datahandlers:
+        for input_src in self._exec_order[0].input:
+            if input_src in self._input_datahandlers:
                 master_datahandler = input_src
                 break
 
+        # Define the function to run a single pass of the pipeline
         def run_pass(master: tuple[tuple, any]):
             """
             Run a single pass of the pipeline
@@ -300,11 +305,11 @@ class Pipeline():
 
             try:
                 known_inputs = params.copy()
-                for input_name, datahandler in self.input_datahandlers.items():
+                for input_name, datahandler in self._input_datahandlers.items():
                     known_inputs[input_name] = datahandler[master_key]
                     
                 # Execute the nodes in order
-                for node in self.exec_order:
+                for node in self._exec_order:
                     # Prepare the inputs for the node
                     node_inputs = [known_inputs[input_name] for input_name in node.input]
                     # Run the node
@@ -319,18 +324,81 @@ class Pipeline():
                     known_inputs.update({output: output_data[i] for i, output in enumerate(node.output)})
                     # Check if the output data should be saved
                     for output_name in node.output:
-                        if output_name in self.output_datahandlers:
-                            self.output_datahandlers[output_name].save(known_inputs[output_name])
+                        if output_name in self._output_datahandlers:
+                            self._output_datahandlers[output_name].save(known_inputs[output_name])
                             
             except Exception as e:
                 log.error(f"Error in pipeline {self.name} with key {master_key}: {e}")
                 log.error(traceback.format_exc())
                 raise e
 
-        # Get a key for the first datahandler and use the key to retrieve all other input data for the pipeline
-        with ThreadPoolExecutor(max_workers=self.max_workers) as mpool:
-            jobs = [mpool.submit(run_pass, mkey) for mkey in self.input_datahandlers[master_datahandler]]
-            for future in as_completed(jobs): # Free up completed futures       
-                del future
+        # Adjust the number of workers if not set
+        if self.max_workers is None:
+            self.max_workers = multiprocessing.cpu_count()
+
+        if self.max_workers < 1:
+            raise ValueError("Number of workers must be greater than 0. Set to None to use all available cores.")
+
+        # Start pipeline execution
+        if self.max_workers == 1:
+            # Run the pipeline sequentially with no threading or multiprocessing
+            for mkey in self._input_datahandlers[master_datahandler]:
+                run_pass(mkey)
+        elif not self.multiprocessing:
+            # Start multithreaded pipeline execution
+            # Create a master key iterator
+            mkey_iter = iter(self._input_datahandlers[master_datahandler])
+
+            # Define and fill a thread pool
+            thread_pool = []
+            for _ in range(self.max_workers):
+                try:
+                    mkey = next(mkey_iter)
+                    thread = threading.Thread(target=run_pass, args=(mkey))
+                    thread.start()
+                    thread_pool.append(thread)
+                except StopIteration:
+                    break
+            
+            # Wait for threads to finish and start new ones until the input data is exhausted
+            while len(thread_pool) > 0:
+                for thread in thread_pool:
+                    if not thread.is_alive():
+                        thread_pool.remove(thread)
+                        try:
+                            mkey = next(mkey_iter)
+                            thread = threading.Thread(target=run_pass, args=(mkey))
+                            thread.start()
+                            thread_pool.append(thread)
+                        except StopIteration:
+                            break
+        else:
+            # Start multiprocessed pipeline execution
+            # Create a master key iterator
+            mkey_iter = iter(self._input_datahandlers[master_datahandler])
+
+            # Define and fill a process pool
+            process_pool = []
+            for _ in range(self.max_workers):
+                try:
+                    mkey = next(mkey_iter)
+                    process = multiprocessing.Process(target=run_pass, args=(mkey))
+                    process.start()
+                    process_pool.append(process)
+                except StopIteration:
+                    break
+            
+            # Wait for processes to finish and start new ones until the input data is exhausted
+            while len(process_pool) > 0:
+                for process in process_pool:
+                    if not process.is_alive():
+                        process_pool.remove(process)
+                        try:
+                            mkey = next(mkey_iter)
+                            process = multiprocessing.Process(target=run_pass, args=(mkey))
+                            process.start()
+                            process_pool.append(process)
+                        except StopIteration:
+                            break
 
         log.info(f"Pipeline {self.name} finished")
