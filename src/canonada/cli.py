@@ -1,7 +1,10 @@
 import sys
 import os
 import shutil
+import tempfile
 import tomllib
+
+from graphviz import Digraph
 
 from ._version import __version__
 from .logger import logger as log
@@ -172,6 +175,8 @@ def main():
                         for p in Pipeline.registry:
                             if p.name == pipeline:
                                 print(p)
+                                graph = visualize_pipeline(p)
+                                graph.view(os.path.join(tempfile.gettempdir(), f"{p.name}_pipeline_graph"), cleanup=True)
                                 viewed = True
                                 break
                         if not viewed:
@@ -279,6 +284,124 @@ Commands:
     version - Print the version of Canonada
     
 """)
+
+def visualize_pipeline(pipeline: Pipeline) -> Digraph:
+    """
+    Produce a graphviz SVG graph given a `Pipeline` object
+    """
+
+    # Load catalog data
+    catlg = catalog_ls()
+    params = catalog_params()
+
+    # Define a new Diagraph object
+    dot = Digraph(
+        name=pipeline.name,
+        comment=pipeline.description,
+        format='svg',
+        graph_attr={
+            'rankdir': 'TB',  # LR (horizontal) TB (vertical)
+            'nodesep': '0.2',  # Vertical spacing between nodes
+            'ranksep': '1.0',  # Horizontal spacing between ranks
+        }
+    )
+    
+    # Add all nodes
+    for node in pipeline.nodes:
+        # Add sources
+        for inpt in node.input:
+            if inpt in catlg:
+                dot.node(
+                    name=inpt,
+                    label=inpt,
+                    shape='ellipse',
+                    style='filled',
+                    fillcolor='#ffebcc',
+                    fontsize='10'
+                )
+        # Add sinks
+        for output in node.output:
+            if output in catlg:
+                dot.node(
+                    name=output,
+                    label=output,
+                    shape='ellipse',
+                    style='filled',
+                    fillcolor='#ccffcc',
+                    fontsize='10'
+                )
+
+        # Format each node input and output
+        formatted_inputs = []
+        formatted_outputs = []
+
+        # Process inputs - check for params: prefix
+        for inpt in node.input:
+            if inpt.startswith('params:'):
+                param_name = inpt[7:]  # Remove 'params:' prefix
+                if param_name in params:
+                    # Truncate long values for display (10 characters)
+                    param_value = str(params[param_name])[:10]
+                    if len(str(params[param_name])) > 10:
+                        param_value += "..."
+                    formatted_inputs.append(f"{inpt} ({param_value})")
+                else:
+                    formatted_inputs.append(inpt)
+            else:
+                formatted_inputs.append(inpt)
+                
+        # Process outputs
+        for output in node.output:
+            formatted_outputs.append(output)
+            
+        # Replace the input/output sections in the label with formatted versions
+        node_inputs_str = '<br/>'.join(formatted_inputs)
+        node_outputs_str = '<br/>'.join(formatted_outputs)
+        
+
+        # Add processing nodes
+        label = (
+            f"<<table border='0' cellborder='0' cellpadding='0' align='center'>"
+            f"<tr><td colspan='2' align='center'><b>{node.name}</b></td></tr>"
+            f"<tr><td colspan='2' align='center'><i>{node.description}</i></td></tr>"
+            f"<tr>"
+            f"<td align='left'><b>Inputs:</b> {node_inputs_str}</td>"
+            f"<td align='right'><b>Outputs:</b> {node_outputs_str}</td>"
+            f"</tr>"
+            f"</table>>"
+        )
+        dot.node(
+            name=node.name,
+            label=label,
+            shape='rectangle',
+            style='filled',
+            fillcolor='#e6f3ff',
+            fontsize='10'
+        )
+    
+    # Create connections
+    for node in pipeline.nodes:
+        # Add edges from sources to nodes
+        for inpt in node.input:
+            if inpt in catlg:
+                dot.edge(inpt, node.name, label=inpt, fontsize='10')
+
+        # Add edges from nodes to consumers
+        for output in node.output:
+            consumers = [
+                n.name for n in pipeline.nodes
+                if output in n.input and n.name != node.name
+            ]
+            for consumer in consumers:
+                dot.edge(node.name, consumer, label=output, fontsize='10')
+
+        # Add edges from nodes to sinks
+        for output in node.output:
+            if output in catlg:
+                dot.edge(node.name, output, fontsize='10')
+    
+    return dot
+
 
 if __name__ == "__main__":
     try:
