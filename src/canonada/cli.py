@@ -54,8 +54,12 @@ class Format:
    END = '\033[0m'
    UNDERLINE = '\033[4m'
 
-# Main CLI function
-def main():
+# CLI core function
+def cli_core() -> None:
+    """
+    Core cli functionality. Argument parsing and request execution.
+    """
+
     args = sys.argv
     if len(args) < 2:
         print_usage()
@@ -402,12 +406,22 @@ def visualize_pipeline(pipeline: Pipeline) -> Digraph:
     
     return dot
 
+# CLI entrypoint
+def main() -> None:
+    """
+    Canonada's CLI entrypoint
 
-if __name__ == "__main__":
+    Adds a layer of error management to cli_core
+    """
+
     try:
-        main()
+        cli_core()
     except ValueError:
         sys.exit(1)
     except Exception as e:
         log.error(e)
         sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
