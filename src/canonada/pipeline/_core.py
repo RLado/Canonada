@@ -117,7 +117,7 @@ class Pipeline():
         repr_buffer.write(f"----- Pipeline: {self.name} -----\n")
         if self.description != "":
             repr_buffer.write(f"Description: {self.description}\n")
-            repr_buffer.write("---------------------------------\n\n")
+            repr_buffer.write(f"{"-"*(22 + len(self.name))}\n\n") # Make the separator as long as the title bar
 
         repr_buffer.write("\n".join([str(node) for node in self.nodes]))
         repr_buffer.write("\n")
