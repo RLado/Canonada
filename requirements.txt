@@ -1,5 +1,9 @@
+# Dev dependencies
 build>=1.2.2
 coverage>=7.0.0
 setuptools>=61.0
 twine>=6.1.0
+mypy>=1.15.0
+
+# Project dependencies
 graphviz==0.20.3
