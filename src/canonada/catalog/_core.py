@@ -1,5 +1,6 @@
 import os
 import tomllib
+from typing import Any
 
 from ..logger import logger as log
 from ._datahandlers import Datahandler, check_datahandler, available_datahandlers
@@ -62,7 +63,7 @@ def ls() -> list:
     # List all available datasets
     return list(catalog.keys())
 
-def params() -> dict[str, any]:
+def params() -> dict[str, Any]:
     """
     Get parameters.
 
@@ -85,7 +86,7 @@ def params() -> dict[str, any]:
 
     return params
 
-def credentials() -> dict[str, any]:
+def credentials() -> dict[str, Any]:
     """
     Get credentials.
 
@@ -108,7 +109,7 @@ def credentials() -> dict[str, any]:
 
     return cred
 
-def _flatten(d, parent_key='', sep='.') -> dict[str, any]:
+def _flatten(d, parent_key='', sep='.') -> dict[str, Any]:
     """
     Flatten a dictionary. Nested keys are concatenated with a dot.
 
@@ -121,7 +122,7 @@ def _flatten(d, parent_key='', sep='.') -> dict[str, any]:
         dict: The flattened dictionary guaranteed to have only one level of keys.
     """
 
-    items = []
+    items: list = []
     for k, v in d.items():
         new_key = f"{parent_key}{sep}{k}" if parent_key else k
         if isinstance(v, dict):

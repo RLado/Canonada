@@ -37,3 +37,6 @@ venv.bak/
 
 # Tests
 .coverage
+
+# MyPy
+.mypy_cache/

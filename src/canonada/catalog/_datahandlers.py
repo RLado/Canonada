@@ -5,6 +5,8 @@ import uuid
 from pathlib import Path
 import time
 import fcntl
+from typing import Any, Generator
+
 from ..logger import logger as log
 
 
@@ -15,16 +17,16 @@ class Datahandler():
     Datahandlers can be given keys to build an index with, this will be necessary for nodes that load from multiple datasets at once. If no keys are provided, the specific implementations of datahandlers will be responsible for building the index or erroring out.
     """
 
-    registry = []
+    registry: list = []
 
     @classmethod
-    def ls(cls):
+    def ls(cls) -> list:
         """
         List all available datahandlers
         """
         return cls.registry
 
-    def __init__(self, name: str, dh_type: str, keys: list, kwargs: dict):
+    def __init__(self, name: str, dh_type: str, keys: set, kwargs: dict) -> None:
         """
         Instantiate a new datahandler.
 
@@ -39,7 +41,7 @@ class Datahandler():
         self.type = dh_type
         self.keys = keys
         self.kwargs = kwargs
-        self.index = {}
+        self.index: dict[str|tuple, Any] = {}
 
         # Check that the datahandler type is not empty
         if self.type == "":
@@ -50,17 +52,17 @@ class Datahandler():
         # Register the datahandler
         Datahandler.registry.append(self)
     
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.index)
 
-    def __iter__(self):
+    def __iter__(self) -> Generator[tuple[Any, dict], Any, None]:
         for key, file in self.index.items():
             yield key, self._load(file)
     
-    def __getitem__(self, key: str):
+    def __getitem__(self, key: str|tuple) -> dict:
         return self._load(self.index[key])
     
-    def _load(self, file: str) -> dict:
+    def _load(self, file: Path) -> dict:
         """
         Load a single file from the dataset.
 
@@ -143,7 +145,7 @@ class JsonMulti(Datahandler):
     If no keys are provided, the index will be built using the filenames as keys.
     """
 
-    def __init__(self, name: str, keys: set, kwargs: dict):
+    def __init__(self, name: str, keys: set, kwargs: dict) -> None:
         """
         Instantiate a new canonada.json_multi datahandler.
 
@@ -196,7 +198,7 @@ class JsonMulti(Datahandler):
 
         return
     
-    def _load(self, file: str) -> dict:
+    def _load(self, file: Path) -> dict:
         """
         Load a single file from the dataset.
 
@@ -241,7 +243,7 @@ class CSVRows(Datahandler):
     Loads and indexes a CSV file by rows. The first row is considered the header.
     """
     
-    def __init__(self, name: str, keys: set, kwargs: dict):
+    def __init__(self, name: str, keys: set, kwargs: dict) -> None:
         """
         Instantiate a new canonada.csv_rows datahandler.
 
@@ -288,14 +290,14 @@ class CSVRows(Datahandler):
                     continue
                 self.index[key] = row
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.index)
     
-    def __iter__(self):
+    def __iter__(self) -> Generator[tuple[str | tuple, Any], Any, None]:
         for key, row in self.index.items():
             yield key, row
     
-    def __getitem__(self, key):
+    def __getitem__(self, key) -> Any:
         return self.index[key]
     
     def _load(self, file) -> dict:

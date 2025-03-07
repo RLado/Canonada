@@ -8,16 +8,16 @@ class System():
     """
     System data structure for canonada construction.
     """
-    registry = []
+    registry:list = []
 
     @classmethod
-    def ls(cls):
+    def ls(cls) -> list:
         """
         List all available systems
         """
         return cls.registry
 
-    def __init__(self, name:str, pipelines:list[Pipeline], description:str=""):
+    def __init__(self, name:str, pipelines:list[Pipeline], description:str="") -> None:
         """
         Instantiate a new pipeline system.
 

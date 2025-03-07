@@ -2,6 +2,7 @@ import io
 import traceback
 import threading
 import multiprocessing
+from typing import Callable, Any
 
 from ..logger import logger as log
 from ..catalog import ls as catalog_ls
@@ -15,7 +16,7 @@ class Node():
     Node data structure for pipeline construction.
     """
 
-    registry = []
+    registry: list = []
 
     @classmethod
     def ls(cls):
@@ -24,7 +25,7 @@ class Node():
         """
         return cls.registry
 
-    def __init__(self, name:str, input:list[str], output:list[str], func:callable, description:str="") -> None:
+    def __init__(self, name:str, input:list[str], output:list[str], func:Callable, description:str="") -> None:
         """
         Instanciate a new node.
 
@@ -40,7 +41,7 @@ class Node():
         self.description:str = description
         self.input: list = input
         self.output: list = output
-        self.func: callable = func
+        self.func: Callable = func
 
         # Check that the node name is unique and not empty
         if self.name == "":
@@ -67,7 +68,7 @@ class Pipeline():
     """
     Pipeline data structure for canonada construction.
     """
-    registry = []
+    registry: list = []
 
     @classmethod
     def ls(cls):
@@ -91,7 +92,7 @@ class Pipeline():
         self.name:str = name
         self.description:str = description
         self.nodes:list[Node] = nodes
-        self.max_workers: int = max_workers
+        self.max_workers: int|None = max_workers
         self.multiprocessing: bool = multiprocessing
         self._exec_order:list[Node] = []
         self._input_datahandlers:dict[str, Datahandler] = {}
@@ -225,7 +226,7 @@ class Pipeline():
                 raise ValueError("Pipeline contains a cycle")
                 break
     
-    def run_once(self, known_inputs:dict[str, any]) -> dict[str, any]:
+    def run_once(self, known_inputs:dict[str, Any]) -> dict[str, Any]:
         """
         Run the pipeline once with known inputs.
 
@@ -291,7 +292,7 @@ class Pipeline():
                 break
 
         # Define the function to run a single pass of the pipeline
-        def run_pass(master: tuple[tuple, any]):
+        def run_pass(master: tuple[tuple, Any]):
             """
             Run a single pass of the pipeline
 

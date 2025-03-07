@@ -5,7 +5,7 @@ def create_offsets(signal: dict, seed: int)->tuple:
     offesets = []
     for i in range(len(signal["time"])):
         offesets.append(random.randint(0, 100))
-    return offesets
+    return tuple(offesets)
 
 def update_signal(signal: dict, offsets: list):
     for i in range(len(signal["signal"])):

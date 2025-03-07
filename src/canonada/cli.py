@@ -4,7 +4,7 @@ import shutil
 import tempfile
 import tomllib
 
-from graphviz import Digraph
+from graphviz import Digraph # type: ignore
 
 from ._version import __version__
 from .logger import logger as log
@@ -32,14 +32,14 @@ log.setLevel("WARNING")
 if len(sys.argv) > 1 and sys.argv[1] != "new":
     sys.path.append(os.getcwd())
     try:
-        from pipelines import *
+        from pipelines import * # type: ignore
     except ImportError as e:
             log.error(e)
             log.error("No pipelines module found in the project directory. Have you initialized a project?")
             raise e
 
     try:
-        from systems import *
+        from systems import * # type: ignore
     except ImportError as e:
             log.error(e)
             log.error("No systems module found in the project directory. Have you initialized a project?")
