@@ -419,6 +419,7 @@ class Pipeline():
                             break
 
         # Finish the progress bar
-        prog_bar.finish()
+        if show_prog:
+            prog_bar.finish()
 
         log.info(f"Pipeline {self.name} finished")
