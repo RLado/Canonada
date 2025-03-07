@@ -1,6 +1,6 @@
 import io
 
-from ..logger import logger as log
+from .._logger import logger as log
 from ..pipeline import Pipeline
 
 

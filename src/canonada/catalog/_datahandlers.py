@@ -7,7 +7,7 @@ import time
 import fcntl
 from typing import Any, Generator
 
-from ..logger import logger as log
+from .._logger import logger as log
 
 
 class Datahandler():

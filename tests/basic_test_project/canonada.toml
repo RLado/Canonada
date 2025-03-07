@@ -6,3 +6,4 @@ description = ""
 
 [logging]
 level = "INFO"
+show_progress = true

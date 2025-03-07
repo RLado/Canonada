@@ -99,7 +99,7 @@ class TestCSVDatahandlers(unittest.TestCase):
         
         # Rebuild the index (this is only necessary for testing purposes)
         csv_rows_dh_save.__init__(name="test_csv_rows_save", keys=[], kwargs={"path": "data/Flights1m_test.csv"})
-        self.assertEqual(len(csv_rows_dh_save), 1000000, "Length of csv_rows datahandler is not correct")
+        self.assertEqual(len(csv_rows_dh_save), 1_000_000, "Length of csv_rows datahandler is not correct")
 
         for i, row in csv_rows_dh_save:
             self.assertEqual(row["FL_DATE"], csv_rows_dh[i]["FL_DATE"], "Saved FL_DATE is not correct")

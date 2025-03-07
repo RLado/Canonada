@@ -4,11 +4,13 @@ import threading
 import multiprocessing
 from typing import Callable, Any
 
-from ..logger import logger as log
+from .._config import config
+from .._logger import logger as log
 from ..catalog import ls as catalog_ls
 from ..catalog import get as catalog_get
 from ..catalog import params as catalog_params
 from ..catalog import Datahandler
+from .._utils.progressbar import ProgressBar
 
 
 class Node():
@@ -340,6 +342,11 @@ class Pipeline():
         if self.max_workers is None:
             self.max_workers = multiprocessing.cpu_count()
 
+        # Create a progress bar (if configured)
+        show_prog = config.get("logging",{}).get("show_progress", True)
+        if show_prog:
+            prog_bar = ProgressBar(total=len(self._input_datahandlers[master_datahandler]), width=30, prefix=f"Pipeline {self.name}:")
+
         if self.max_workers < 1:
             raise ValueError("Number of workers must be greater than 0. Set to None to use all available cores.")
 
@@ -347,6 +354,8 @@ class Pipeline():
         if self.max_workers == 1:
             # Run the pipeline sequentially with no threading or multiprocessing
             for mkey in self._input_datahandlers[master_datahandler]:
+                if show_prog:
+                    prog_bar.update()
                 run_pass(mkey)
         elif not self.multiprocessing:
             # Start multithreaded pipeline execution
@@ -369,6 +378,8 @@ class Pipeline():
                 for thread in thread_pool:
                     if not thread.is_alive():
                         thread_pool.remove(thread)
+                        if show_prog:
+                            prog_bar.update()
                         try:
                             mkey = next(mkey_iter)
                             thread = threading.Thread(target=run_pass, args=(mkey,))
@@ -397,6 +408,8 @@ class Pipeline():
                 for process in process_pool:
                     if not process.is_alive():
                         process_pool.remove(process)
+                        if show_prog:
+                            prog_bar.update()
                         try:
                             mkey = next(mkey_iter)
                             process = multiprocessing.Process(target=run_pass, args=(mkey,))
@@ -404,5 +417,8 @@ class Pipeline():
                             process_pool.append(process)
                         except StopIteration:
                             break
+
+        # Finish the progress bar
+        prog_bar.finish()
 
         log.info(f"Pipeline {self.name} finished")

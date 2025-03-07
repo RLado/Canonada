@@ -2,28 +2,17 @@ import sys
 import os
 import shutil
 import tempfile
-import tomllib
 
 from graphviz import Digraph # type: ignore
 
 from ._version import __version__
-from .logger import logger as log
+from ._config import config
+from ._logger import logger as log
 from .catalog import ls as catalog_ls
 from .catalog import params as catalog_params
 from .pipeline import Pipeline
 from .system import System
 
-# Read canonada.toml
-config: dict
-try:
-    with open("canonada.toml", "rb") as f:
-        config = tomllib.load(f)
-except FileNotFoundError:
-    config = {
-        'logging': {
-            'level': 'INFO'
-        }
-    }
 
 # Set log level to WARNING for CLI imports
 log.setLevel("WARNING")
@@ -46,7 +35,7 @@ if len(sys.argv) > 1 and sys.argv[1] != "new":
             raise e
 
 # Reset the log level
-log.setLevel(config['logging']['level'])
+log.setLevel(config.get("logging",{}).get("level", "INFO"))
 
 # Format for the CLI
 class Format:
