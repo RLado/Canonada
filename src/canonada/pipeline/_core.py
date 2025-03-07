@@ -52,6 +52,9 @@ class Node():
         assert len(set(input)) == len(input), "Input list contains duplicates"
         assert len(set(output)) == len(output), "Output list contains duplicates"
         assert callable(self.func), "Function is not callable"
+
+        # Register the node
+        Node.registry.append(self)
     
     def __repr__(self) -> str:
         """

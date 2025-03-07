@@ -18,13 +18,13 @@ offset_pipe = Pipeline("offset_pipe", [
         func=test_nodes.update_signal, 
         input=["raw_signals", "offsets"], 
         output=["offset_signals"], 
-        name="update_signal"
+        name="update_signal_1"
         ),
     Node(
         func=test_nodes.update_signal, 
         input=["raw_signals", "offsets"], 
         output=["offset_signals_mem"], 
-        name="update_signal"
+        name="update_signal_2"
         ),
     Node(
         func=test_nodes.split_signal, 
