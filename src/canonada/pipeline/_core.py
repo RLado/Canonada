@@ -29,7 +29,7 @@ class Node():
 
     def __init__(self, name:str, input:list[str], output:list[str], func:Callable, description:str="") -> None:
         """
-        Instanciate a new node.
+        Instantiate a new node.
 
         Args:
             name (str): The name of the node.
@@ -84,7 +84,7 @@ class Pipeline():
 
     def __init__(self, name:str, nodes:list[Node], description:str="", max_workers:int|None=None, multiprocessing:bool=True) -> None:
         """
-        Instanciate a new pipeline.
+        Instantiate a new pipeline.
 
         Args:
             name (str): The name of the pipeline. This name will be used to call the pipeline from the command line. The name must be unique.
@@ -155,7 +155,7 @@ class Pipeline():
                     raise ValueError(f"The pipeline contains multiple nodes with the same output: {output}")
                 outputs.add(output)
         
-        # Check which outouts are in the catalog
+        # Check which outputs are in the catalog
         catalog_outputs: set = set()
         for output in outputs:
             if output in catalog_ls():
