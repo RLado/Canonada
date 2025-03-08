@@ -27,7 +27,7 @@ Canonada allows you to define data projects as graphs, composed of nodes and edg
 **Let's quickly define a data pipeline as an example:**
 
 We will define this simple pipeline that transforms a few timeseries signals:
-<img src="https://github.com/user-attachments/assets/5622226b-8992-440e-92c6-69df5dcfca92" width="800" />
+<img src="https://github.com/user-attachments/assets/b773f613-4f86-4de2-95c3-b9dceacb58fd" width="800" />
 > Use `canonada view` to get a representation of your data pipelines
 
 ```python
