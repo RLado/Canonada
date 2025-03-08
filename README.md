@@ -1,5 +1,4 @@
 ## Canonada
-> ⚠️ Canonada is currently under development. 
 
 Canonada is a data science framework that helps you build production-ready streaming pipelines for data processing in Python.
 
@@ -20,47 +19,71 @@ Canonada is a data science framework that helps you build production-ready strea
 - **Create streaming data pipelines**: Create parallel and sequential data pipelines with ease
 - **Visualize your data pipeline**: Visualize your data pipelines, nodes and connections
 
-## Project Structure
+## Summary
+The goal of Canonada is to help data scientists and engineers to organize their data projects with a standardized structure that facilitates more maintainable code compared to one-off scripts and notebooks.
+
+Canonada allows you to define data projects as graphs, composed of nodes and edges, that stream data dynamically from your defined sources to memory, allowing the usage datasets bigger than memory. The system parallelizes the execution of your projects allowing you to focus exclusively on the data processing logic you care about.
+
+**Let's quickly define a data pipeline as an example:**
+
+We will define this simple pipeline that transforms a few timeseries signals:
+<img src="https://github.com/user-attachments/assets/5622226b-8992-440e-92c6-69df5dcfca92" width="800" />
+> Use `canonada view` to get a representation of your data pipelines
+
+```python
+# Import example functions to transform the data
+from .nodes import example_nodes
+
+# Define the pipeline
+streaming_pipe = Pipeline("streaming_pipe", [
+        # Read each signal from the catalog and add an offset defined in the parameters
+        Node(
+            func=example_nodes.add_offset, 
+            input=["raw_signals", "params:section_1.offset"], # Load inputs from the catalog
+            output=["offset_signals"],
+            name="create_offsets",
+            description="Adds parametrized offset to the signals"
+            ),
+        # Save the previous output to disk with a dummy module
+        Node(
+            func=lambda x: x, # Just pass the input to the output
+            input=["offset_signals"],
+            output=["offset_signals_catalog"],
+            name="save_offsets",
+            description="Saves the offset signals using the datahandler specified in the catalog"
+        ),
+        # Calculate the maximum value of each signal
+        Node(
+            func=example_nodes.get_signal_max,
+            input=["offset_signals"],
+            output=["max_values"],
+            name="get_signal_max",
+            description="Calculates the maximum value of the signals"
+        ),
+        # Calculate the mean value of each signal
+        Node(
+            func=example_nodes.calculate_mean,
+            input=["offset_signals"],
+            output=["mean_values"],
+            name="calculate_mean",
+            description="Calculates the mean value of the signals"
+        ),
+        # Save the stats of the signals in a CSV file
+        Node(
+            func=example_nodes.list_stats,
+            input=["offset_signals", "max_values", "mean_values"],
+            output=["stats"], # It will be saved in the defined file in the catalog
+            name="list_stats",
+            description="Returns the stats of the signals"
+        )
+    ],
+    description="This pipeline reads signals from the catalog, adds an offset, calculates the maximum and mean values, and saves the stats to disk"
+)
 ```
-canonada.toml
-config/
-    catalog.toml
-    parameters.toml
-    credentials.toml
-data/
-    ...
-datahandlers/
-    __init__.py
-    custom_datahandler_1.py
-    custom_datahandler_2.py
-    ...
-notebooks/
-    ...
-pipelines/
-    __init__.py
-    pipeline_1.py
-    pipeline_2.py
-    nodes_1/
-        __init__.py
-        node_1.py
-        node_2.py
-        ...
-    nodes_2/
-        __init__.py
-        node_3.py
-        node_4.py
-        ...
-    ...
-systems/
-    __init__.py
-    system_1.py
-    system_2.py
-    ...
-tests/
-    test_node_group_1.py
-    test_node_group_2.py
-    ...
-```
+
+**Done!** Defining a data pipeline is as simple as that. To execute it you can type `canonada run pipelines streaming_pipe` on your terminal or use the `.run()` method of your pipeline object. Canonada will take care of the rest and parallelize the execution without any extra effort.
+
+> Checkout the [Getting Started](https://github.com/RLado/Canonada/wiki/GettingStarted) guide for more information.
 
 ## Usage
 Available commands:
