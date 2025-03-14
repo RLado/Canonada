@@ -405,8 +405,6 @@ def main() -> None:
 
     try:
         cli_core()
-    except ValueError:
-        sys.exit(1)
     except Exception as e:
         log.error(e)
         sys.exit(1)
