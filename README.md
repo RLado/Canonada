@@ -1,4 +1,4 @@
-# Canonada
+# <img src=logo.svg height=27> Canonada
 
 Canonada is a data science framework that helps you build production-ready streaming pipelines for data processing in Python.
 
