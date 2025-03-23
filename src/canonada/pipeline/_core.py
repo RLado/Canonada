@@ -230,6 +230,12 @@ class Pipeline():
             if iter_count > max_iter:
                 raise ValueError("Pipeline contains a cycle")
                 break
+        
+        # Log a warning for those outputs that are never used as inputs or saved
+        inputs: set[str] = set([i for node in self.nodes for i in node.input])
+        for o in outputs:
+            if o not in catalog_outputs and o not in inputs:
+                log.warning(f"Output named '{o}' is never used nor saved.")
     
     def run_once(self, known_inputs:dict[str, Any]) -> dict[str, Any]:
         """
@@ -243,7 +249,8 @@ class Pipeline():
         """
 
         # Calculate the execution order & get datahandlers
-        self._calc_exec_order()
+        if self._exec_order == []:
+            self._calc_exec_order()
 
         # Read the project parameters
         params = catalog_params()
