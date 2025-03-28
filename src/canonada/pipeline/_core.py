@@ -333,6 +333,9 @@ class Pipeline():
                     if len(output_data) != len(node.output):
                         if len(node.output) == 1:
                             output_data = (output_data,)
+                        else:
+                            log.error(f"Node '{node.name}' is producing more outputs ({len(output_data)}) than declared ({len(node.output)})")
+                            raise RuntimeError(f"Node '{node.name}' is producing more outputs ({len(output_data)}) than declared ({len(node.output)})")
                     # Update the known inputs
                     known_inputs.update({output: output_data[i] for i, output in enumerate(node.output)})
                     # Check if the output data should be saved
