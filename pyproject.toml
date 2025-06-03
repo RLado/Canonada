@@ -1,6 +1,6 @@
 [project]
 name = "canonada"
-version = "0.3.5"
+version = "0.3.6"
 authors = [{ name = "Ricard Lado", email = "ricard@lado.one" }]
 description = "Canonada is a data science framework that helps you build production-ready streaming pipelines for data processing in Python."
 readme = "README.md"
