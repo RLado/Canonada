@@ -136,12 +136,12 @@ class Pipeline():
         """
         self.run()
 
-    def _calc_exec_order(self, known_inputs: set = set(), init_datahandlers: bool = True) -> None:
+    def _calc_exec_order(self, known_inputs: set[str] = set(), init_datahandlers: bool = True) -> None:
         """
         Calculate the execution order of the nodes. Get the necessary datahandlers for input and output.
 
         Args:
-            known_inputs (set, optional): A set of known inputs to the pipeline. Useful for pipelines designed to be ran
+            known_inputs (set[str], optional): A set of known inputs to the pipeline. Useful for pipelines designed to be ran
               only using the `run_once` method. Defaults to an empty set.
             init_datahandlers (bool, optional): Whether to initialize the datahandlers for input and output. Defaults to True.
         """
