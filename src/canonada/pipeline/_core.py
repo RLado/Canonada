@@ -136,9 +136,14 @@ class Pipeline():
         """
         self.run()
 
-    def _calc_exec_order(self) -> None:
+    def _calc_exec_order(self, known_inputs: set[str] = set(), init_datahandlers: bool = True) -> None:
         """
         Calculate the execution order of the nodes. Get the necessary datahandlers for input and output.
+
+        Args:
+            known_inputs (set[str], optional): A set of known inputs to the pipeline. Useful for pipelines designed to be ran
+              only using the `run_once` method. Defaults to an empty set.
+            init_datahandlers (bool, optional): Whether to initialize the datahandlers for input and output. Defaults to True.
         """
         log.debug("Calculating pipeline execution order")
 
@@ -167,7 +172,7 @@ class Pipeline():
             raise ValueError(f"Output to a node cannot be a parameter: {catalog_outputs.intersection(params)}")
 
         # Check that no outputs can be known inputs
-        known_inputs: set = set()
+        known_inputs = set([ki for ki in known_inputs if ki[:8] == "params:"]) # Remove parameters from `known_inputs`
         for node in self.nodes:
             for input in node.input:
                 if input in catalog_ls():
@@ -177,11 +182,12 @@ class Pipeline():
             if known_input in outputs:
                 raise ValueError(f"Output '{known_input}' is also an input. This is not allowed.")
 
-        # Get the necessary datahandlers for input and output
-        for input in known_inputs:
-            self._input_datahandlers[input] = catalog_get(input)
-        for output in catalog_outputs:
-            self._output_datahandlers[output] = catalog_get(output)
+        # Get the necessary datahandlers for input and output (if required)
+        if init_datahandlers:
+            for input in known_inputs:
+                self._input_datahandlers[input] = catalog_get(input)
+            for output in catalog_outputs:
+                self._output_datahandlers[output] = catalog_get(output)
         
         # Add the parameters to the known inputs to calculate the execution order
         known_inputs.update(params)
@@ -250,7 +256,7 @@ class Pipeline():
 
         # Calculate the execution order & get datahandlers
         if self._exec_order == []:
-            self._calc_exec_order()
+            self._calc_exec_order(known_inputs=set(known_inputs.keys()), init_datahandlers=False)
 
         # Read the project parameters
         params = catalog_params()
