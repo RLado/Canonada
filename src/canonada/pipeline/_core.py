@@ -172,7 +172,7 @@ class Pipeline():
             raise ValueError(f"Output to a node cannot be a parameter: {catalog_outputs.intersection(params)}")
 
         # Check that no outputs can be known inputs
-        known_inputs = set([ki for ki in known_inputs if ki[:8] == "params:"]) # Remove parameters from `known_inputs`
+        known_inputs = set([ki for ki in known_inputs if ki[:8] != "params:"]) # Remove parameters from `known_inputs`
         for node in self.nodes:
             for input in node.input:
                 if input in catalog_ls():
