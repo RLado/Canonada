@@ -272,7 +272,7 @@ class Pipeline():
             # Run the node
             output_data = node.func(*node_inputs)
             # If the node does not return a tuple, check if a list/tuple is returned and wrap it in a tuple
-            if not isinstance(output_data, tuple) and not isinstance(output_data, list):
+            if not isinstance(output_data, tuple):
                 output_data = (output_data,)
             if len(output_data) != len(node.output):
                 if len(node.output) == 1:
@@ -334,7 +334,7 @@ class Pipeline():
                     # Run the node
                     output_data = node.func(*node_inputs)
                     # If the node does not return a tuple, check if a list/tuple is returned and wrap it in a tuple
-                    if not isinstance(output_data, tuple) and not isinstance(output_data, list):
+                    if not isinstance(output_data, tuple):
                         output_data = (output_data,)
                     if len(output_data) != len(node.output):
                         if len(node.output) == 1:
