@@ -367,12 +367,14 @@ class Pipeline():
             raise ValueError("Number of workers must be greater than 0. Set to None to use all available cores.")
 
         # Start pipeline execution
+        if show_prog:
+            prog_bar.update(0)
         if self.max_workers == 1:
             # Run the pipeline sequentially with no threading or multiprocessing
             for mkey in self._input_datahandlers[master_datahandler]:
+                run_pass(mkey)
                 if show_prog:
                     prog_bar.update()
-                run_pass(mkey)
         elif not self.multiprocessing:
             # Start multithreaded pipeline execution
             # Create a master key iterator
