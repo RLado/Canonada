@@ -1,6 +1,7 @@
 import math
 import time
 import sys
+import locale
 
 
 class ProgressBar:
@@ -24,6 +25,17 @@ class ProgressBar:
         self.start_time = time.time()
         self.current = 0
         self.last_output_length = 0
+        
+        # Determine if we can use Unicode characters
+        self._supports_unicode = self._check_unicode_support()
+        
+        # Set characters based on Unicode support
+        if self._supports_unicode:
+            self.filled_char = "█"
+            self.empty_char = "░"
+        else:
+            self.filled_char = "#"
+            self.empty_char = "-"
 
     def update(self, current:int|None=None) -> None:
         """
@@ -60,7 +72,7 @@ class ProgressBar:
 
             # Calculate progress bar
             filled_length = int(self.width * self.current // self.total)
-            bar = "█" * filled_length + "░" * (self.width - filled_length)
+            bar = self.filled_char * filled_length + self.empty_char * (self.width - filled_length)
 
             # Create output string
             output = f"{self.prefix} |{bar}| {percent:.1f}% | {self.current}/{self.total} | Elapsed: {elapsed_str} | Remaining: {remaining_str}"
@@ -79,13 +91,13 @@ class ProgressBar:
             bar_idx = int(
                 (math.sin(self.current / self.width) / 2 + 0.5) * (self.width - 4)
             )
-            bar = "░" * bar_idx + "█" * 5 + "░" * (self.width - 5 - bar_idx)
+            bar = self.empty_char * bar_idx + self.filled_char * 5 + self.empty_char * (self.width - 5 - bar_idx)
 
             # Create output string
             output = f"{self.prefix} |{bar}| Items: {self.current} | Elapsed: {elapsed_str} | {speed_str} | {time_per_item_str}"
 
         # Clear the current line and write the new output
-        sys.stdout.write("\r" + " " * self.last_output_length + "\r" + output)
+        self._safe_write("\r" + " " * self.last_output_length + "\r" + output)
         sys.stdout.flush()
 
         # Save the length of the current output
@@ -96,8 +108,47 @@ class ProgressBar:
         Finish the progress bar and print a new line.
         """
         self.update(self.current)
-        sys.stdout.write("\n")
+        self._safe_write("\n")
         sys.stdout.flush()
+
+    def _check_unicode_support(self) -> bool:
+        """
+        Check if the current stdout supports Unicode characters.
+        
+        Returns:
+            True if Unicode is supported, False otherwise
+        """
+        try:
+            # Try to encode Unicode block characters
+            test_chars = "█░"
+            if hasattr(sys.stdout, 'encoding') and sys.stdout.encoding:
+                test_chars.encode(sys.stdout.encoding)
+            else:
+                # Fallback to system encoding
+                test_chars.encode(locale.getpreferredencoding())
+            return True
+        except (UnicodeEncodeError, LookupError):
+            return False
+
+    def _safe_write(self, text: str) -> None:
+        """
+        Safely write text to stdout, handling encoding errors.
+        
+        Args:
+            text: Text to write to stdout
+        """
+        try:
+            sys.stdout.write(text)
+        except UnicodeEncodeError:
+            # If we get a UnicodeEncodeError, try to encode with error handling
+            if hasattr(sys.stdout, 'encoding') and sys.stdout.encoding:
+                encoding = sys.stdout.encoding
+            else:
+                encoding = locale.getpreferredencoding()
+            
+            # Replace problematic characters with ASCII equivalents
+            safe_text = text.encode(encoding, errors='replace').decode(encoding)
+            sys.stdout.write(safe_text)
 
     def _format_time(self, seconds:float) -> str:
         """
