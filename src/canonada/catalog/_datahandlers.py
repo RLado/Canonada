@@ -4,10 +4,32 @@ import os
 import uuid
 from pathlib import Path
 import time
-import fcntl
+import sys
 from typing import Any, Generator
 
 from .._logger import logger as log
+
+# Cross-platform file lock using msvcrt (Windows) or fcntl (Unix)
+if sys.platform == "win32":
+    import msvcrt
+
+    class FileLock:
+        def __init__(self, file):
+            self.file = file
+        def acquire(self):
+            msvcrt.locking(self.file.fileno(), msvcrt.LK_LOCK, 1)
+        def release(self):
+            msvcrt.locking(self.file.fileno(), msvcrt.LK_UNLCK, 1)
+else:
+    import fcntl
+
+    class FileLock:
+        def __init__(self, file):
+            self.file = file
+        def acquire(self):
+            fcntl.flock(self.file, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        def release(self):
+            fcntl.flock(self.file, fcntl.LOCK_UN)
 
 
 class Datahandler():
@@ -318,17 +340,18 @@ class CSVRows(Datahandler):
             raise ValueError("No path provided for csv_rows.")
 
         with open(self.kwargs["path"], 'a') as f:
+            lock = FileLock(f)
             while True:
                 try:
-                    fcntl.flock(f, fcntl.LOCK_EX | fcntl.LOCK_NB)  # Try to acquire a lock
+                    lock.acquire()
                     break  # Lock acquired
-                except BlockingIOError:
+                except (BlockingIOError, OSError):
                     time.sleep(0.1)  # Wait if the file is already open
                     log.debug("Waiting for file lock")
 
             writer = csv.DictWriter(f, fieldnames=self.headers)
             writer.writerow(kwargs)
-            fcntl.flock(f, fcntl.LOCK_UN)  # Release the lock
+            lock.release()
 
 
 # Register of all built in datasets
