@@ -1,4 +1,5 @@
 import io
+import platform
 import traceback
 import threading
 import multiprocessing
@@ -112,6 +113,11 @@ class Pipeline():
 
         # Register the pipeline
         Pipeline.registry.append(self)
+
+        # If the platform is Windows or macOS, disable multiprocessing by default
+        if platform.system() in ["Windows", "Darwin"] and self.multiprocessing:
+            log.warning("Multiprocessing is not supported on Windows or macOS. Setting multiprocessing to False.")
+            self.multiprocessing = False
     
     def __repr__(self) -> str:
         """
