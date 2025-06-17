@@ -1,17 +1,17 @@
 import io
-import platform
-import traceback
-import threading
 import multiprocessing
-from typing import Callable, Any
+import platform
+import threading
+import traceback
+from typing import Any, Callable
 
 from .._config import config
 from .._logger import logger as log
-from ..catalog import ls as catalog_ls
-from ..catalog import get as catalog_get
-from ..catalog import params as catalog_params
-from ..catalog import Datahandler
 from .._utils.progressbar import ProgressBar
+from ..catalog import Datahandler
+from ..catalog import get as catalog_get
+from ..catalog import ls as catalog_ls
+from ..catalog import params as catalog_params
 
 
 class Node():

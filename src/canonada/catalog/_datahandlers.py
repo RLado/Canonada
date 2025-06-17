@@ -1,10 +1,10 @@
 import csv
 import json
 import os
+import sys
+import time
 import uuid
 from pathlib import Path
-import time
-import sys
 from typing import Any, Generator
 
 from .._logger import logger as log

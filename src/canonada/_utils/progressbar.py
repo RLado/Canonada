@@ -1,7 +1,7 @@
-import math
-import time
-import sys
 import locale
+import math
+import sys
+import time
 
 
 class ProgressBar:
