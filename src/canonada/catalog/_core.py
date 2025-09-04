@@ -98,14 +98,20 @@ def credentials() -> dict[str, Any]:
     if not os.path.isfile("config/credentials.toml"):
         raise FileNotFoundError("Credentials file not found")
         return
-    
+
     # Read the credentials file
     cred: dict
     with open("config/credentials.toml", "rb") as f:
         cred = tomllib.load(f)
-    
-    # Flatten dictionary  
+
+    # Flatten dictionary
     cred = _flatten(cred)
+
+    # Overwrite any key in cred with the value of the environment variable if it exists
+    for key in list(cred.keys()):
+        env_val = os.environ.get(key)
+        if env_val is not None:
+            cred[key] = env_val
 
     return cred
 
