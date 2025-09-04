@@ -109,7 +109,8 @@ def credentials() -> dict[str, Any]:
 
     # Overwrite any key in cred with the value of the environment variable if it exists
     for key in list(cred.keys()):
-        env_val = os.environ.get(key)
+        env_key = key.replace('.', '_')
+        env_val = os.environ.get(env_key)
         if env_val is not None:
             cred[key] = env_val
 
