@@ -75,13 +75,13 @@ def params() -> dict[str, Any]:
     if not os.path.isfile("config/parameters.toml"):
         raise FileNotFoundError("Parameters file not found")
         return
-    
+
     # Read the parameters file
     params: dict
     with open("config/parameters.toml", "rb") as f:
         params = tomllib.load(f)
-    
-    # Flatten dictionary  
+
+    # Flatten dictionary
     params = _flatten(params)
 
     return params
@@ -105,14 +105,18 @@ def credentials() -> dict[str, Any]:
         cred = tomllib.load(f)
 
     # Flatten dictionary
-    cred = _flatten(cred)
+    cred = _flatten(cred, warn_on_dot=True)
 
     # Overwrite any key in cred with the value of the environment variable if it exists
-    for key in list(cred.keys()):
-        env_key = key.replace('.', '_')
+    env_keys = []
+    for key in cred.keys():
+        env_key = key.replace(".", "_")
         env_val = os.environ.get(env_key)
         if env_val is not None:
+            if env_key in env_keys:
+                log.warning(f"Warning: Due to the necessity to use '_' instead of '.' in environment variables, environment `{env_key}` will override more than one of the defined credentials. This might be an unexpected behavior.")
             cred[key] = env_val
+        env_keys.append(env_key)
 
     return cred
 
@@ -124,7 +128,7 @@ def _flatten(d, parent_key='', sep='.') -> dict[str, Any]:
         d (dict): The dictionary to flatten.
         parent_key (str): The parent key.
         sep (str): The separator to use.
-    
+
     Returns:
         dict: The flattened dictionary guaranteed to have only one level of keys.
     """
