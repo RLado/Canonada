@@ -105,7 +105,7 @@ def credentials() -> dict[str, Any]:
         cred = tomllib.load(f)
 
     # Flatten dictionary
-    cred = _flatten(cred, warn_on_dot=True)
+    cred = _flatten(cred)
 
     # Overwrite any key in cred with the value of the environment variable if it exists
     env_keys = []
