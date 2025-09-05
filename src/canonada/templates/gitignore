@@ -33,5 +33,5 @@ env.bak/
 venv.bak/
 
 # Canonada
-credentials.toml
+# credentials.toml # Use environment variables to protect secrets: [https://github.com/RLado/Canonada/wiki/Catalog#defining-parameters-and-credentials]
 data/
