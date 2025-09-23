@@ -356,9 +356,7 @@ class Pipeline():
                             self._output_datahandlers[output_name].save(known_inputs[output_name])
                             
             except Exception as e:
-                log.error(f"Error in pipeline {self.name} with key {master_key}: {e}")
-                log.error(traceback.format_exc())
-                raise e
+                log.error(f"Error in pipeline {self.name} with key {master_key}: {e}\n{traceback.format_exc()}")
 
         # Adjust the number of workers if not set
         if self.max_workers is None:
