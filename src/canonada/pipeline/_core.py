@@ -439,7 +439,7 @@ class Pipeline():
                         raise res
                 except StopPipeline as e:
                     log.error(e)
-                    return
+                    raise e
                 except Exception as e:
                     raise e
                 if show_prog:
@@ -471,7 +471,7 @@ class Pipeline():
                                 raise res
                         except StopPipeline as e:
                             log.error(e)
-                            return
+                            raise e
                         except Exception as e:
                             raise e
                         thread_pool.remove(thread)
@@ -484,7 +484,7 @@ class Pipeline():
                             thread_pool.append(thread)
                         except StopIteration:
                             break
-                        
+
         else:
             # Start multiprocessed pipeline execution
             # Create a master key iterator
@@ -511,7 +511,7 @@ class Pipeline():
                                 raise res
                         except StopPipeline as e:
                             log.error(e)
-                            return
+                            raise e
                         except Exception as e:
                             for p in process_pool: # Kill remaining processes
                                 p.kill()
