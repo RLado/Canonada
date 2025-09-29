@@ -434,6 +434,7 @@ class TestPipelines(unittest.TestCase):
         data_gen_pipeline.multiprocessing = True
         offset_error_pipeline = pipelines.offsets_pipeline.offset_error_pipe
         offset_error_pipeline.multiprocessing = True
+        offset_error_pipeline.error_tolerant = False
         
         data_gen_pipeline.run()
         try:
@@ -484,6 +485,7 @@ class TestPipelines(unittest.TestCase):
         data_gen_pipeline.multiprocessing = False
         offset_error_pipeline = pipelines.offsets_pipeline.offset_error_pipe
         offset_error_pipeline.multiprocessing = False
+        offset_error_pipeline.error_tolerant = False
         
         data_gen_pipeline.run()
         try:
@@ -534,6 +536,7 @@ class TestPipelines(unittest.TestCase):
         data_gen_pipeline.max_workers = 1
         offset_error_pipeline = pipelines.offsets_pipeline.offset_error_pipe
         offset_error_pipeline.max_workers = 1
+        offset_error_pipeline.error_tolerant = False
         
         data_gen_pipeline.run()
         try:
