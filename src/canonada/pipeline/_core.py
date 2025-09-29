@@ -8,11 +8,56 @@ from typing import Any, Callable
 from .._config import config
 from .._logger import logger as log
 from .._utils.progressbar import ProgressBar
+from ..exceptions import SkipItem, StopPipeline
 from ..catalog import Datahandler
 from ..catalog import get as catalog_get
 from ..catalog import ls as catalog_ls
 from ..catalog import params as catalog_params
 
+
+class _ThreadReturn(threading.Thread):
+    """
+    Custom Thread object that allows a value return on .join
+    """
+
+    def __init__(self, group=None, target=None, name=None,
+                 args=(), kwargs={}, Verbose=None):
+        threading.Thread.__init__(self, group, target, name, args, kwargs)
+        self._return = None
+
+    def run(self):
+        if self._target is not None:
+            self._return = self._target(*self._args, **self._kwargs)
+
+    def join(self, *args):
+        super().join(*args)
+        return self._return
+
+class _ProcessReturn(multiprocessing.Process):
+    """
+    Custom Process object that allows a value to return on .join
+    """
+
+    def __init__(self, group=None, target=None, name=None, args=(), kwargs={}, daemon=None):
+        self._q = multiprocessing.Queue(maxsize=1)  # For result or exception
+        super().__init__(group=group, target=target, name=name, args=args, kwargs=kwargs, daemon=daemon)
+
+    def run(self):
+        if self._target is not None:
+            result = self._target(*self._args, **self._kwargs)
+        else:
+            result = None
+        self._q.put(result, block=True)
+
+    def join(self, *args):
+        super().join(*args)
+        if self.is_alive():
+            return None  
+        
+        # Process has finished
+        if not self._q.empty():
+            return self._q.get_nowait()
+        return None
 
 class Node():
     """
@@ -83,7 +128,7 @@ class Pipeline():
         """
         return cls.registry
 
-    def __init__(self, name:str, nodes:list[Node], description:str="", max_workers:int|None=None, multiprocessing:bool=True) -> None:
+    def __init__(self, name:str, nodes:list[Node], description:str="", max_workers:int|None=None, multiprocessing:bool=True, error_tolerant:bool=True) -> None:
         """
         Instantiate a new pipeline.
 
@@ -93,6 +138,7 @@ class Pipeline():
             description (str, optional): A description of the pipeline. Defaults to "".
             max_workers (int, optional): The maximum number of workers to use. Defaults to None (uses all available cores).
             multiprocessing (bool, optional): Whether to use multiprocessing. Defaults to True.
+            error_tolerant (bool, optional): If an error occurs inside the pipeline does not stop its execution. Defaults to True.
         """
 
         self.name:str = name
@@ -100,6 +146,7 @@ class Pipeline():
         self.nodes:list[Node] = nodes
         self.max_workers: int|None = max_workers
         self.multiprocessing: bool = multiprocessing
+        self.error_tolerant: bool = error_tolerant
         self._exec_order:list[Node] = []
         self._input_datahandlers:dict[str, Datahandler] = {}
         self._output_datahandlers:dict[str, Datahandler] = {}
@@ -316,7 +363,7 @@ class Pipeline():
                 break
 
         # Define the function to run a single pass of the pipeline
-        def run_pass(master: tuple[tuple, Any]):
+        def run_pass(master: tuple[tuple, Any]) -> None|Exception:
             """
             Run a single pass of the pipeline
 
@@ -354,9 +401,18 @@ class Pipeline():
                     for output_name in node.output:
                         if output_name in self._output_datahandlers:
                             self._output_datahandlers[output_name].save(known_inputs[output_name])
-                            
+
+            except SkipItem as e:
+                e.master_key = master_key
+                log.debug(e)
+                return None
+            except StopPipeline as e:
+                return StopPipeline(master_key = master_key, message = e.message)
             except Exception as e:
                 log.error(f"Error in pipeline {self.name} with key {master_key}: {e}\n{traceback.format_exc()}")
+                if not self.error_tolerant:
+                    return e
+            return None
 
         # Adjust the number of workers if not set
         if self.max_workers is None:
@@ -373,12 +429,22 @@ class Pipeline():
         # Start pipeline execution
         if show_prog:
             prog_bar.update(0)
+
         if self.max_workers == 1:
             # Run the pipeline sequentially with no threading or multiprocessing
             for mkey in self._input_datahandlers[master_datahandler]:
-                run_pass(mkey)
+                try:
+                    res = run_pass(mkey)
+                    if res:
+                        raise res
+                except StopPipeline as e:
+                    log.error(e)
+                    return
+                except Exception as e:
+                    raise e
                 if show_prog:
                     prog_bar.update()
+
         elif not self.multiprocessing:
             # Start multithreaded pipeline execution
             # Create a master key iterator
@@ -389,7 +455,7 @@ class Pipeline():
             for _ in range(self.max_workers):
                 try:
                     mkey = next(mkey_iter)
-                    thread = threading.Thread(target=run_pass, args=(mkey,))
+                    thread = _ThreadReturn(target=run_pass, args=(mkey,))
                     thread.start()
                     thread_pool.append(thread)
                 except StopIteration:
@@ -399,16 +465,26 @@ class Pipeline():
             while len(thread_pool) > 0:
                 for thread in thread_pool:
                     if not thread.is_alive():
+                        try:
+                            res = thread.join(0)
+                            if res:
+                                raise res
+                        except StopPipeline as e:
+                            log.error(e)
+                            return
+                        except Exception as e:
+                            raise e
                         thread_pool.remove(thread)
                         if show_prog:
                             prog_bar.update()
                         try:
                             mkey = next(mkey_iter)
-                            thread = threading.Thread(target=run_pass, args=(mkey,))
+                            thread = _ThreadReturn(target=run_pass, args=(mkey,))
                             thread.start()
                             thread_pool.append(thread)
                         except StopIteration:
                             break
+                        
         else:
             # Start multiprocessed pipeline execution
             # Create a master key iterator
@@ -419,7 +495,7 @@ class Pipeline():
             for _ in range(self.max_workers):
                 try:
                     mkey = next(mkey_iter)
-                    process = multiprocessing.Process(target=run_pass, args=(mkey,))
+                    process = _ProcessReturn(target=run_pass, args=(mkey,))
                     process.start()
                     process_pool.append(process)
                 except StopIteration:
@@ -429,12 +505,23 @@ class Pipeline():
             while len(process_pool) > 0:
                 for process in process_pool:
                     if not process.is_alive():
+                        try:
+                            res = process.join(0)
+                            if res:
+                                raise res
+                        except StopPipeline as e:
+                            log.error(e)
+                            return
+                        except Exception as e:
+                            for p in process_pool: # Kill remaining processes
+                                p.kill()
+                            raise e
                         process_pool.remove(process)
                         if show_prog:
                             prog_bar.update()
                         try:
                             mkey = next(mkey_iter)
-                            process = multiprocessing.Process(target=run_pass, args=(mkey,))
+                            process = _ProcessReturn(target=run_pass, args=(mkey,))
                             process.start()
                             process_pool.append(process)
                         except StopIteration:

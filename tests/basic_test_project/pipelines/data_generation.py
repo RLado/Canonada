@@ -16,5 +16,6 @@ data_gen = Pipeline("data_generation",
             output=[], # No usable outputs, writes to disk (data/raw_signals)
             name="signal_generator"
         ),
-    ]
+    ],
+    error_tolerant = False
 )

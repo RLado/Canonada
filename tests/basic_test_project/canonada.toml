@@ -5,5 +5,5 @@ authors = []
 description = ""
 
 [logging]
-level = "INFO"
+level = "DEBUG"
 show_progress = true
