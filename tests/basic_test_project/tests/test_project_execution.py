@@ -9,6 +9,8 @@ import pipelines.data_generation
 import pipelines.offsets_pipeline
 import systems.gen_offset_sys
 
+import canonada.exceptions
+
 
 class TestPipelines(unittest.TestCase):
     """
@@ -290,7 +292,11 @@ class TestPipelines(unittest.TestCase):
         offset_stop_pipeline.multiprocessing = True
         
         data_gen_pipeline.run()
-        offset_stop_pipeline.run()
+        try:
+            offset_stop_pipeline.run()
+            self.assertTrue(False, "The pipeline should have raised a StopPipeline exeception before this point")
+        except canonada.exceptions.StopPipeline:
+            pass
 
         # Check if the data was generated
         self.assertTrue(os.path.isdir("data/raw_signals"), "Data was not generated")
@@ -334,7 +340,11 @@ class TestPipelines(unittest.TestCase):
         offset_stop_pipeline.multiprocessing = False
         
         data_gen_pipeline.run()
-        offset_stop_pipeline.run()
+        try:
+            offset_stop_pipeline.run()
+            self.assertTrue(False, "The pipeline should have raised a StopPipeline exeception before this point")
+        except canonada.exceptions.StopPipeline:
+            pass
 
         # Check if the data was generated
         self.assertTrue(os.path.isdir("data/raw_signals"), "Data was not generated")
@@ -378,7 +388,11 @@ class TestPipelines(unittest.TestCase):
         offset_stop_pipeline.max_workers = 1
         
         data_gen_pipeline.run()
-        offset_stop_pipeline.run()
+        try:
+            offset_stop_pipeline.run()
+            self.assertTrue(False, "The pipeline should have raised a StopPipeline exeception before this point")
+        except canonada.exceptions.StopPipeline:
+            pass
 
         # Check if the data was generated
         self.assertTrue(os.path.isdir("data/raw_signals"), "Data was not generated")
@@ -424,6 +438,7 @@ class TestPipelines(unittest.TestCase):
         data_gen_pipeline.run()
         try:
             offset_error_pipeline.run()
+            self.assertTrue(False, "The pipeline should have raised a RuntimeError exeception before this point")
         except RuntimeError as e:
             pass
         except Exception as e:
@@ -473,6 +488,7 @@ class TestPipelines(unittest.TestCase):
         data_gen_pipeline.run()
         try:
             offset_error_pipeline.run()
+            self.assertTrue(False, "The pipeline should have raised a RuntimeError exeception before this point")
         except RuntimeError as e:
             pass
         except Exception as e:
@@ -522,6 +538,7 @@ class TestPipelines(unittest.TestCase):
         data_gen_pipeline.run()
         try:
             offset_error_pipeline.run()
+            self.assertTrue(False, "The pipeline should have raised a RuntimeError exeception before this point")
         except RuntimeError as e:
             pass
         except Exception as e:
