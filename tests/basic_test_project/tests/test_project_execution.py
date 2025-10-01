@@ -1,6 +1,7 @@
 import os
 import sys
 import unittest
+import platform
 
 # Change to the test project directory
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
@@ -425,6 +426,7 @@ class TestPipelines(unittest.TestCase):
         os.system("rm -rf data/split_signals1")
         os.system("rm -rf data/split_signals2")
 
+    @unittest.skipIf(platform.system() in ["Windows", "Darwin"], "Multiprocessing is not supported on Windows or macOS")
     def test_error_pipeline_multiprocessing_not_tolerant(self):
         """
         Test running a pipeline that errors at a random point. (Using multiprocessing)
@@ -578,6 +580,7 @@ class TestPipelines(unittest.TestCase):
         os.system("rm -rf data/split_signals1")
         os.system("rm -rf data/split_signals2")
 
+    @unittest.skipIf(platform.system() in ["Windows", "Darwin"], "Multiprocessing is not supported on Windows or macOS")
     def test_error_pipeline_multiprocessing_tolerant(self):
         """
         Test running a pipeline that errors at a random point but is error tolerant. (Using multiprocessing)
