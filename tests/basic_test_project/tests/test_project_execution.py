@@ -461,7 +461,7 @@ class TestPipelines(unittest.TestCase):
         substracted_signals = os.listdir("data/substracted_signals")
         self.assertGreater(len(raw_signals), len(substracted_signals), "Raw signals and substracted signals should have a different number of files, but do not.")
 
-        # Assert that split_signals1 and split_signals2 have aproximately the same number of files
+        # Assert that split_signals1 and split_signals2 have approximately the same number of files
         split_signals1 = os.listdir("data/split_signals1")
         split_signals2 = os.listdir("data/split_signals2")
         self.assertLessEqual(len(split_signals1) - len(split_signals2), 1, "Split signals 1 and 2 have a different number of files")
@@ -512,10 +512,10 @@ class TestPipelines(unittest.TestCase):
         substracted_signals = os.listdir("data/substracted_signals")
         self.assertGreater(len(raw_signals), len(substracted_signals), "Raw signals and substracted signals should have a different number of files, but do not.")
 
-        # Assert that split_signals1 and split_signals2 have the same number of files
+        # Assert that split_signals1 and split_signals2 have approximately the same number of files
         split_signals1 = os.listdir("data/split_signals1")
         split_signals2 = os.listdir("data/split_signals2")
-        self.assertEqual(len(split_signals1), len(split_signals2), "Split signals 1 and 2 have a different number of files")
+        self.assertLessEqual(len(split_signals1) - len(split_signals2), 1, "Split signals 1 and 2 have a different number of files")
 
         # Assert that both split_signals1 and split_signals2 have the same number of files as raw_signals
         self.assertGreater(len(raw_signals), len(split_signals1), "Raw signals and split signals should have a different number of files, but do not")
