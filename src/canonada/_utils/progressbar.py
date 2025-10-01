@@ -61,7 +61,7 @@ class ProgressBar:
 
             # Calculate remaining time
             if self.current > 0:
-                items_per_second = self.current / elapsed_time
+                items_per_second = self.current / elapsed_time if elapsed_time > 0 else float('inf')
                 remaining_items = self.total - self.current
                 remaining_time = (
                     remaining_items / items_per_second if items_per_second > 0 else 0
