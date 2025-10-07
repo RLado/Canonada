@@ -1,3 +1,4 @@
+import copy
 import io
 import multiprocessing
 import platform
@@ -8,11 +9,11 @@ from typing import Any, Callable
 from .._config import config
 from .._logger import logger as log
 from .._utils.progressbar import ProgressBar
-from ..exceptions import SkipItem, StopPipeline
 from ..catalog import Datahandler
 from ..catalog import get as catalog_get
 from ..catalog import ls as catalog_ls
 from ..catalog import params as catalog_params
+from ..exceptions import SkipItem, StopPipeline
 
 
 class _ThreadReturn(threading.Thread):
@@ -321,7 +322,7 @@ class Pipeline():
         for node in self._exec_order:
             log.debug(f"Running node: {node.name} for inputs: {known_inputs.keys()}")
             # Prepare the inputs for the node
-            node_inputs = [known_inputs[input_name] for input_name in node.input]
+            node_inputs = [copy.deepcopy(known_inputs[input_name]) for input_name in node.input]
             # Run the node
             output_data = node.func(*node_inputs)
             # If the node does not return a tuple, check if a list/tuple is returned and wrap it in a tuple
@@ -383,7 +384,7 @@ class Pipeline():
                 # Execute the nodes in order
                 for node in self._exec_order:
                     # Prepare the inputs for the node
-                    node_inputs = [known_inputs[input_name] for input_name in node.input]
+                    node_inputs = [copy.deepcopy(known_inputs[input_name]) for input_name in node.input]
                     # Run the node
                     output_data = node.func(*node_inputs)
                     # If the node does not return a tuple, check if a list/tuple is returned and wrap it in a tuple
