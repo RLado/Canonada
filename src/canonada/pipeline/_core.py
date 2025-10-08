@@ -72,7 +72,7 @@ class Node():
         """
         List all available nodes
         """
-        
+
         return cls.registry
 
     def __init__(self, name:str, input:list[str], output:list[str], func:Callable, description:str="") -> None:
@@ -166,9 +166,9 @@ class Pipeline():
         # Register the pipeline
         Pipeline.registry.append(self)
 
-        # If the platform is Windows or macOS, disable multiprocessing by default
-        if platform.system() in ["Windows", "Darwin"] and self.multiprocessing:
-            log.warning("Multiprocessing is not supported on Windows or macOS. Setting multiprocessing to False.")
+        # If the platform is Windows, disable multiprocessing by default
+        if platform.system() in ["Windows"] and self.multiprocessing:
+            log.warning("Multiprocessing is not supported on Windows. Setting multiprocessing to False.")
             self.multiprocessing = False
     
     def __repr__(self) -> str:
