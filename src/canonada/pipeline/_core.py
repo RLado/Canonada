@@ -337,7 +337,7 @@ class Pipeline():
         return known_inputs # Now being the known outputs       
     
     # Define the function to run a single pass of the pipeline
-    def _run_pass(self, master: tuple[tuple, Any], params: dict) -> None|Exception:
+    def _run_pass(self, master: tuple[tuple, Any], params: dict[str, Any]) -> None|Exception:
         """
         Run a single pass of the pipeline
 
