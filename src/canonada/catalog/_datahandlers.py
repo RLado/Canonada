@@ -46,6 +46,7 @@ class Datahandler():
         """
         List all available datahandlers
         """
+        
         return cls.registry
 
     def __init__(self, name: str, dh_type: str, keys: set, kwargs: dict) -> None:
@@ -246,6 +247,7 @@ class JsonMulti(Datahandler):
                 - filename (str): The filename to save the data to.
                 - data (dict): The data to save in json format.
         """
+
         # Check if kwargs is a dict and contains the required keys
         if not isinstance(kwargs, dict):
             raise ValueError("Invalid format provided provided to JsonMulti. Expected dict with 'filename' and 'data' keys.")

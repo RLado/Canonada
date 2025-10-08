@@ -72,6 +72,7 @@ class Node():
         """
         List all available nodes
         """
+        
         return cls.registry
 
     def __init__(self, name:str, input:list[str], output:list[str], func:Callable, description:str="") -> None:
@@ -109,6 +110,7 @@ class Node():
         """
         Show node name and input/output
         """
+
         repr_buffer = io.StringIO()
         repr_buffer.write(f"Node: {self.name}\n\tinput: {self.input}\n\toutput: {self.output}")
         if self.description != "":
@@ -120,6 +122,7 @@ class Pipeline():
     """
     Pipeline data structure for canonada construction.
     """
+
     registry: list = []
 
     @classmethod
@@ -127,6 +130,7 @@ class Pipeline():
         """
         List all available pipelines
         """
+
         return cls.registry
 
     def __init__(self, name:str, nodes:list[Node], description:str="", max_workers:int|None=None, multiprocessing:bool=True, error_tolerant:bool=True) -> None:
@@ -188,6 +192,7 @@ class Pipeline():
         """
         Run the pipeline
         """
+
         self.run()
 
     def _calc_exec_order(self, known_inputs: set[str] = set(), init_datahandlers: bool = True) -> None:
@@ -199,6 +204,7 @@ class Pipeline():
               only using the `run_once` method. Defaults to an empty set.
             init_datahandlers (bool, optional): Whether to initialize the datahandlers for input and output. Defaults to True.
         """
+
         log.debug("Calculating pipeline execution order")
 
         # Reset the execution order (avoid duplicates)
@@ -348,6 +354,7 @@ class Pipeline():
         Returns:
             None|Exception
         """
+
         master_key, _ = master
 
         try:
@@ -393,7 +400,7 @@ class Pipeline():
         """
         Execute the pipeline
         """
-        
+
         # Calculate the execution order & get datahandlers
         self._calc_exec_order()
         
