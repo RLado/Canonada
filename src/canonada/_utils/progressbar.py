@@ -19,6 +19,7 @@ class ProgressBar:
             width: Width of the progress bar in characters
             prefix: Text to display before the progress bar
         """
+
         self.total = total if total is not None and total>0 else None
         self.width = width
         self.prefix = prefix
@@ -44,6 +45,7 @@ class ProgressBar:
         Args:
             current: Current progress value (if None, increment by 1)
         """
+        
         # Update current progress
         if current is not None:
             self.current = current
@@ -107,6 +109,7 @@ class ProgressBar:
         """
         Finish the progress bar and print a new line.
         """
+
         self.update(self.current)
         self._safe_write("\n")
         sys.stdout.flush()
@@ -118,6 +121,7 @@ class ProgressBar:
         Returns:
             True if Unicode is supported, False otherwise
         """
+
         try:
             # Try to encode Unicode block characters
             test_chars = "█░"
@@ -137,6 +141,7 @@ class ProgressBar:
         Args:
             text: Text to write to stdout
         """
+
         try:
             sys.stdout.write(text)
         except UnicodeEncodeError:
@@ -154,6 +159,7 @@ class ProgressBar:
         """
         Format time in seconds to a human-readable string.
         """
+        
         if seconds < 0.1:
             return f"{seconds*1000:.0f}ms"
         elif seconds < 60:

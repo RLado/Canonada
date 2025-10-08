@@ -1,7 +1,6 @@
 import copy
 import io
 import multiprocessing
-import platform
 import threading
 import traceback
 from typing import Any, Callable
@@ -72,6 +71,7 @@ class Node():
         """
         List all available nodes
         """
+
         return cls.registry
 
     def __init__(self, name:str, input:list[str], output:list[str], func:Callable, description:str="") -> None:
@@ -109,6 +109,7 @@ class Node():
         """
         Show node name and input/output
         """
+
         repr_buffer = io.StringIO()
         repr_buffer.write(f"Node: {self.name}\n\tinput: {self.input}\n\toutput: {self.output}")
         if self.description != "":
@@ -120,6 +121,7 @@ class Pipeline():
     """
     Pipeline data structure for canonada construction.
     """
+
     registry: list = []
 
     @classmethod
@@ -127,6 +129,7 @@ class Pipeline():
         """
         List all available pipelines
         """
+
         return cls.registry
 
     def __init__(self, name:str, nodes:list[Node], description:str="", max_workers:int|None=None, multiprocessing:bool=True, error_tolerant:bool=True) -> None:
@@ -161,11 +164,6 @@ class Pipeline():
 
         # Register the pipeline
         Pipeline.registry.append(self)
-
-        # If the platform is Windows or macOS, disable multiprocessing by default
-        if platform.system() in ["Windows", "Darwin"] and self.multiprocessing:
-            log.warning("Multiprocessing is not supported on Windows or macOS. Setting multiprocessing to False.")
-            self.multiprocessing = False
     
     def __repr__(self) -> str:
         """
@@ -188,6 +186,7 @@ class Pipeline():
         """
         Run the pipeline
         """
+
         self.run()
 
     def _calc_exec_order(self, known_inputs: set[str] = set(), init_datahandlers: bool = True) -> None:
@@ -199,6 +198,7 @@ class Pipeline():
               only using the `run_once` method. Defaults to an empty set.
             init_datahandlers (bool, optional): Whether to initialize the datahandlers for input and output. Defaults to True.
         """
+
         log.debug("Calculating pipeline execution order")
 
         # Reset the execution order (avoid duplicates)
@@ -335,12 +335,66 @@ class Pipeline():
             known_inputs.update({output: output_data[i] for i, output in enumerate(node.output)})
         
         return known_inputs # Now being the known outputs       
-        
+    
+    # Define the function to run a single pass of the pipeline
+    def _run_pass(self, master: tuple[tuple, Any], params: dict[str, Any]) -> None|Exception:
+        """
+        Run a single pass of the pipeline
+
+        Args:
+            master (tuple[tuple, any]): A tuple with the master key and the master data
+            params (dict[str, any]): Catalog parameters dictionary
+
+        Returns:
+            None|Exception
+        """
+
+        master_key, _ = master
+
+        try:
+            known_inputs = params
+            for input_name, datahandler in self._input_datahandlers.items():
+                known_inputs[input_name] = datahandler[master_key]
+                
+            # Execute the nodes in order
+            for node in self._exec_order:
+                # Prepare the inputs for the node
+                node_inputs = [copy.deepcopy(known_inputs[input_name]) for input_name in node.input]
+                # Run the node
+                output_data = node.func(*node_inputs)
+                # If the node does not return a tuple, check if a list/tuple is returned and wrap it in a tuple
+                if not isinstance(output_data, tuple):
+                    output_data = (output_data,)
+                if len(output_data) != len(node.output):
+                    if len(node.output) == 1:
+                        output_data = (output_data,)
+                    else:
+                        log.error(f"Node '{node.name}' is producing more outputs ({len(output_data)}) than declared ({len(node.output)})")
+                        raise RuntimeError(f"Node '{node.name}' is producing more outputs ({len(output_data)}) than declared ({len(node.output)})")
+                # Update the known inputs
+                known_inputs.update({output: output_data[i] for i, output in enumerate(node.output)})
+                # Check if the output data should be saved
+                for output_name in node.output:
+                    if output_name in self._output_datahandlers:
+                        self._output_datahandlers[output_name].save(known_inputs[output_name])
+
+        except SkipItem as e:
+            e.master_key = master_key
+            log.debug(e)
+            return None
+        except StopPipeline as e:
+            return StopPipeline(master_key = master_key, message = e.message)
+        except Exception as e:
+            log.error(f"Error in pipeline {self.name} with key {master_key}: {e}\n{traceback.format_exc()}")
+            if not self.error_tolerant:
+                return e
+        return None
+
     def run(self) -> None:
         """
         Execute the pipeline
         """
-        
+
         # Calculate the execution order & get datahandlers
         self._calc_exec_order()
         
@@ -363,58 +417,6 @@ class Pipeline():
                 master_datahandler = input_src
                 break
 
-        # Define the function to run a single pass of the pipeline
-        def run_pass(master: tuple[tuple, Any]) -> None|Exception:
-            """
-            Run a single pass of the pipeline
-
-            Args:
-                master (tuple[tuple, any]): A tuple with the master key and the master data
-
-            Returns:
-                None
-            """
-            master_key, _ = master
-
-            try:
-                known_inputs = params.copy()
-                for input_name, datahandler in self._input_datahandlers.items():
-                    known_inputs[input_name] = datahandler[master_key]
-                    
-                # Execute the nodes in order
-                for node in self._exec_order:
-                    # Prepare the inputs for the node
-                    node_inputs = [copy.deepcopy(known_inputs[input_name]) for input_name in node.input]
-                    # Run the node
-                    output_data = node.func(*node_inputs)
-                    # If the node does not return a tuple, check if a list/tuple is returned and wrap it in a tuple
-                    if not isinstance(output_data, tuple):
-                        output_data = (output_data,)
-                    if len(output_data) != len(node.output):
-                        if len(node.output) == 1:
-                            output_data = (output_data,)
-                        else:
-                            log.error(f"Node '{node.name}' is producing more outputs ({len(output_data)}) than declared ({len(node.output)})")
-                            raise RuntimeError(f"Node '{node.name}' is producing more outputs ({len(output_data)}) than declared ({len(node.output)})")
-                    # Update the known inputs
-                    known_inputs.update({output: output_data[i] for i, output in enumerate(node.output)})
-                    # Check if the output data should be saved
-                    for output_name in node.output:
-                        if output_name in self._output_datahandlers:
-                            self._output_datahandlers[output_name].save(known_inputs[output_name])
-
-            except SkipItem as e:
-                e.master_key = master_key
-                log.debug(e)
-                return None
-            except StopPipeline as e:
-                return StopPipeline(master_key = master_key, message = e.message)
-            except Exception as e:
-                log.error(f"Error in pipeline {self.name} with key {master_key}: {e}\n{traceback.format_exc()}")
-                if not self.error_tolerant:
-                    return e
-            return None
-
         # Adjust the number of workers if not set
         if self.max_workers is None:
             self.max_workers = multiprocessing.cpu_count()
@@ -435,7 +437,7 @@ class Pipeline():
             # Run the pipeline sequentially with no threading or multiprocessing
             for mkey in self._input_datahandlers[master_datahandler]:
                 try:
-                    res = run_pass(mkey)
+                    res = self._run_pass(mkey, params)
                     if res:
                         raise res
                 except StopPipeline as e:
@@ -456,7 +458,7 @@ class Pipeline():
             for _ in range(self.max_workers):
                 try:
                     mkey = next(mkey_iter)
-                    thread = _ThreadReturn(target=run_pass, args=(mkey,))
+                    thread = _ThreadReturn(target=self._run_pass, args=(mkey, params))
                     thread.start()
                     thread_pool.append(thread)
                 except StopIteration:
@@ -480,7 +482,7 @@ class Pipeline():
                             prog_bar.update()
                         try:
                             mkey = next(mkey_iter)
-                            thread = _ThreadReturn(target=run_pass, args=(mkey,))
+                            thread = _ThreadReturn(target=self._run_pass, args=(mkey, params))
                             thread.start()
                             thread_pool.append(thread)
                         except StopIteration:
@@ -496,7 +498,7 @@ class Pipeline():
             for _ in range(self.max_workers):
                 try:
                     mkey = next(mkey_iter)
-                    process = _ProcessReturn(target=run_pass, args=(mkey,))
+                    process = _ProcessReturn(target=self._run_pass, args=(mkey, params))
                     process.start()
                     process_pool.append(process)
                 except StopIteration:
@@ -522,7 +524,7 @@ class Pipeline():
                             prog_bar.update()
                         try:
                             mkey = next(mkey_iter)
-                            process = _ProcessReturn(target=run_pass, args=(mkey,))
+                            process = _ProcessReturn(target=self._run_pass, args=(mkey, params))
                             process.start()
                             process_pool.append(process)
                         except StopIteration:

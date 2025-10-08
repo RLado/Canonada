@@ -8,6 +8,7 @@ class System():
     """
     System data structure for canonada construction.
     """
+    
     registry:list = []
 
     @classmethod
@@ -15,6 +16,7 @@ class System():
         """
         List all available systems
         """
+
         return cls.registry
 
     def __init__(self, name:str, pipelines:list[Pipeline], description:str="") -> None:
@@ -62,18 +64,21 @@ class System():
         """
         Return the number of pipelines in the system
         """
+
         return len(self.pipeline)
 
     def __call__(self):
         """
         Run the system
         """
+
         self.run()
     
     def run(self):
         """
         Run the system pipelines sequentially
         """
+
         log.info(f"Running pipeline system: '{self.name}'")
         for pipeline in self.pipeline:
             pipeline()

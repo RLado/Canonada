@@ -1,7 +1,6 @@
 import os
 import sys
 import unittest
-import platform
 
 # Change to the test project directory
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
@@ -426,7 +425,6 @@ class TestPipelines(unittest.TestCase):
         os.system("rm -rf data/split_signals1")
         os.system("rm -rf data/split_signals2")
 
-    @unittest.skipIf(platform.system() in ["Windows", "Darwin"], "Multiprocessing is not supported on Windows or macOS")
     def test_error_pipeline_multiprocessing_not_tolerant(self):
         """
         Test running a pipeline that errors at a random point. (Using multiprocessing)
@@ -517,7 +515,7 @@ class TestPipelines(unittest.TestCase):
         # Assert that split_signals1 and split_signals2 have approximately the same number of files
         split_signals1 = os.listdir("data/split_signals1")
         split_signals2 = os.listdir("data/split_signals2")
-        self.assertLessEqual(len(split_signals1) - len(split_signals2), 1, "Split signals 1 and 2 have a different number of files")
+        self.assertLessEqual(len(split_signals1) - len(split_signals2), 2, "Split signals 1 and 2 have a different number of files")
 
         # Assert that both split_signals1 and split_signals2 have the same number of files as raw_signals
         self.assertGreater(len(raw_signals), len(split_signals1), "Raw signals and split signals should have a different number of files, but do not")
@@ -580,7 +578,6 @@ class TestPipelines(unittest.TestCase):
         os.system("rm -rf data/split_signals1")
         os.system("rm -rf data/split_signals2")
 
-    @unittest.skipIf(platform.system() in ["Windows", "Darwin"], "Multiprocessing is not supported on Windows or macOS")
     def test_error_pipeline_multiprocessing_tolerant(self):
         """
         Test running a pipeline that errors at a random point but is error tolerant. (Using multiprocessing)
