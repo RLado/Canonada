@@ -1,7 +1,6 @@
 import copy
 import io
 import multiprocessing
-import platform
 import threading
 import traceback
 from typing import Any, Callable
@@ -165,11 +164,6 @@ class Pipeline():
 
         # Register the pipeline
         Pipeline.registry.append(self)
-
-        # If the platform is Windows, disable multiprocessing by default
-        if platform.system() in ["Windows"] and self.multiprocessing:
-            log.warning("Multiprocessing is not supported on Windows. Setting multiprocessing to False.")
-            self.multiprocessing = False
     
     def __repr__(self) -> str:
         """
