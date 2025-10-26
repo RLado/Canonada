@@ -82,10 +82,10 @@ class Datahandler():
         for key, file in self.index.items():
             yield key, self._load(file)
     
-    def __getitem__(self, key: str|tuple) -> dict:
+    def __getitem__(self, key: str|tuple) -> Any:
         return self._load(self.index[key])
     
-    def _load(self, file: Path) -> dict:
+    def _load(self, file: Path) -> Any:
         """
         Load a single file from the dataset.
 
