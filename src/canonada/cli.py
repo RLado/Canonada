@@ -353,10 +353,14 @@ def visualize_pipeline(pipeline: Pipeline) -> Digraph:
         
 
         # Add processing nodes
+        description_row = (
+            f"<tr><td colspan='2' align='center'><i>{node.description}</i></td></tr>"
+            if node.description else ""
+        )
         label = (
             f"<<table border='0' cellborder='0' cellpadding='0' align='center'>"
             f"<tr><td colspan='2' align='center'><b>{node.name}</b></td></tr>"
-            f"<tr><td colspan='2' align='center'><i>{node.description}</i></td></tr>"
+            f"{description_row}"
             f"<tr>"
             f"<td align='left'><b>Inputs:</b> {node_inputs_str}</td>"
             f"<td align='right'><b>Outputs:</b> {node_outputs_str}</td>"
