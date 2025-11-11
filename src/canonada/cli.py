@@ -140,6 +140,7 @@ def cli_core() -> None:
 
                 case "systems":
                     for system in args[3:]:
+                        ran = False
                         for s in System.registry:
                             ran = False
                             if s.name == system:
