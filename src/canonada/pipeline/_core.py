@@ -406,7 +406,7 @@ class Pipeline():
 
         # If none of the pipeline inputs are datahandlers, run the pipeline once
         if len(self._input_datahandlers) == 0:
-            self.run_once({})
+            self._run_pass((None, None), params)
             log.info(f"Pipeline {self.name} finished")
             return
 
