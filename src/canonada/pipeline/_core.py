@@ -458,7 +458,7 @@ class Pipeline():
             for _ in range(self.max_workers):
                 try:
                     mkey = next(mkey_iter)
-                    thread = _ThreadReturn(target=self._run_pass, args=(mkey, params))
+                    thread = _ThreadReturn(target=self._run_pass, args=(mkey, copy.deepcopy(params)))
                     thread.start()
                     thread_pool.append(thread)
                 except StopIteration:
@@ -482,7 +482,7 @@ class Pipeline():
                             prog_bar.update()
                         try:
                             mkey = next(mkey_iter)
-                            thread = _ThreadReturn(target=self._run_pass, args=(mkey, params))
+                            thread = _ThreadReturn(target=self._run_pass, args=(mkey, copy.deepcopy(params)))
                             thread.start()
                             thread_pool.append(thread)
                         except StopIteration:
