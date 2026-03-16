@@ -13,7 +13,7 @@ data_gen = Pipeline("data_generation",
         Node(
             func=signal_generator.gen,
             input=["params:sig_gen.num_signals", "params:sig_gen.num_samples"],
-            output=[], # No usable outputs, writes to disk (data/raw_signals)
+            output=["_"], # No usable outputs, writes to disk (data/raw_signals)
             name="signal_generator"
         ),
     ],
